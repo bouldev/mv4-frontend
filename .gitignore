@@ -14,6 +14,9 @@ node_modules/
 .eslintcache
 .changeset/pre.json
 
+package-lock.json
+yarn.lock
+
 dist/
 coverage/
 release/
