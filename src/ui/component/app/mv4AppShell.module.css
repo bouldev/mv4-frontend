@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.app-shell-bg {
+    @apply backdrop-blur-md bg-black/10;
+}
+
+.app-shell-bg-light {
+    @apply bg-white/10;
+}

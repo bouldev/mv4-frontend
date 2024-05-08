@@ -7,35 +7,34 @@ import {
   useMantineColorScheme,
 } from '@mantine/core';
 import { useEffect, useState } from 'react';
-import { useLocalModel } from '@modern-js/runtime/model';
+import { useModel, useLocalModel } from '@modern-js/runtime/model';
 import { Moon, SunOne, Theme } from '@icon-park/react';
-import { useLocalStorage } from '@mantine/hooks';
-import { notifications } from '@mantine/notifications';
 import css from './page.module.css';
 import RegisterForm from './component/RegisterForm';
 import {
   LoginActionType,
   LoginActionTypeSwitchModel,
 } from '@/routes/login/model/loginActionTypeSwitchModel';
+import bgCss from '@/ui/css/background.module.css';
 import LoginForm from '@/routes/login/component/LoginForm';
 import ForgotPasswordForm from '@/routes/login/component/ForgotPasswordForm';
+import { getThemeStyleCssName, ThemeSwitchModel } from '@/context/UIContext';
 
 export default function LoginPage() {
   const [paperOpened, setPaperOpened] = useState(false);
   const [formShowed, setFormShowed] = useState(true);
 
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
-  const [nowTheme, setTheme] = useLocalStorage<'default' | 'anime'>({
-    key: 'mv4Theme',
-    defaultValue: 'default',
-  });
 
   const [state, actions] = useLocalModel(LoginActionTypeSwitchModel);
 
+  const [themeState, themeActions] = useModel(ThemeSwitchModel);
+
   useEffect(() => {
+    themeActions.loadTheme();
     setTimeout(() => {
       setPaperOpened(true);
-    }, 50);
+    }, 100);
   }, []);
 
   function setLoginActionType(type: LoginActionType) {
@@ -43,31 +42,26 @@ export default function LoginPage() {
     actions.setPendingNewState(type);
   }
 
-  function onChangeBg() {
-    notifications.clean();
-    if (nowTheme === 'anime') {
-      setTheme('default');
-      notifications.show({ message: '已切换到默认主题' });
-    } else {
-      setTheme('anime');
-      notifications.show({ message: '已切换到花里胡哨主题' });
-    }
-  }
-
-  function getBgCss() {
-    switch (nowTheme) {
-      case 'anime':
-        return css.bgAnime;
-      case 'default':
-      default:
-        return css.bgDefault;
-    }
-  }
-
   return (
-    <Box className={`${css.bg} ${getBgCss()}`}>
+    <Box
+      className={`${bgCss.bg} ${getThemeStyleCssName(themeState.style)} ${
+        colorScheme === 'light' && themeState.style === 'anime'
+          ? bgCss.bgAnimeLight
+          : ''
+      }`}
+    >
       <Flex justify={'flex-end'} m={4} gap={'xs'}>
-        <ActionIcon variant="default" size="xl" onClick={() => onChangeBg()}>
+        <ActionIcon
+          variant="default"
+          size="xl"
+          onClick={() => {
+            if (themeState.style === 'default') {
+              themeActions.changeStyle('anime');
+            } else {
+              themeActions.changeStyle('default');
+            }
+          }}
+        >
           <Theme />
         </ActionIcon>
         <ActionIcon
@@ -84,9 +78,7 @@ export default function LoginPage() {
             <Paper
               style={styles}
               className={`${css.loginCard} ${
-                colorScheme === 'light' && nowTheme === 'anime'
-                  ? css.loginCardLight
-                  : ''
+                colorScheme === 'light' ? css.loginCardLight : ''
               }`}
               shadow="xl"
               p="xl"

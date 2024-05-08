@@ -27,14 +27,8 @@ export default function Layout() {
     key: 'mv4ColorScheme',
   });
 
-  // const { colorScheme, setColorScheme, toggleColorScheme, clearColorScheme } = useMantineColorScheme();
-
   return (
-    <MantineProvider
-      theme={theme}
-      colorSchemeManager={colorSchemeManager}
-      defaultColorScheme={'auto'}
-    >
+    <MantineProvider theme={theme} colorSchemeManager={colorSchemeManager}>
       <ModalsProvider>
         <Outlet />
       </ModalsProvider>

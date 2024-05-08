@@ -117,23 +117,25 @@ export default function RegisterForm({
           <Checkbox
             mt="md"
             label={
-              <Flex>
-                <Text size="xs">我已阅读并同意遵守</Text>
-                <Anchor
-                  underline="hover"
-                  size="xs"
-                  href="https://fastbuilder.pro/enduser-license.html"
-                >
-                  用户协议
-                </Anchor>
-                <Text size="xs">以及认可</Text>
-                <Anchor
-                  underline="hover"
-                  size="xs"
-                  href="https://fastbuilder.pro/privacy-policy.html"
-                >
-                  隐私策略
-                </Anchor>
+              <Flex direction={'column'}>
+                <Text size="xs">
+                  我已阅读并同意遵守
+                  <Anchor
+                    underline="hover"
+                    size="xs"
+                    href="https://fastbuilder.pro/enduser-license.html"
+                  >
+                    用户协议
+                  </Anchor>
+                  ，并且认可
+                  <Anchor
+                    underline="hover"
+                    size="xs"
+                    href="https://fastbuilder.pro/privacy-policy.html"
+                  >
+                    隐私策略
+                  </Anchor>
+                </Text>
               </Flex>
             }
             key={form.key('termsOfService')}
@@ -141,7 +143,7 @@ export default function RegisterForm({
           />
           <Turnstile
             sitekey={MV4_CLOUDFLARE_TURNSTILE_SITE_KEY}
-            theme={'dark'}
+            className={css.loginCaptcha}
             onVerify={token => {
               form.setFieldValue('cf_captcha', token);
             }}

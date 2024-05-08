@@ -2,38 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-.bg {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100vh;
-    background-position: center;
-    background-size: cover;
-    background-repeat: no-repeat;
-}
-
-.bg-default {
-    background-image: url("https://mdn.alipayobjects.com/yuyan_qk0oxh/afts/img/V-_oS6r-i7wAAAAAAAAAAAAAFl94AQBr");
-}
-
-.bg-anime {
-    background-color: rgba(0, 0, 0, 0.6);
-    background-blend-mode: darken;
-}
-
-@media screen and (max-width: 1080px) {
-    .bg-anime {
-        background-image: url("https://www.loliapi.com/acg/pe/");
-    }
-}
-
-@media screen and (min-width: 1081px) {
-    .bg-anime {
-        background-image: url("https://www.loliapi.com/acg/pc/");
-    }
-}
-
 .wrapper {
     @apply flex flex-col justify-center items-center h-full relative;
     z-index: 3;
@@ -43,7 +11,7 @@
 }*/
 
 .login-card {
-    @apply mx-3 p-7 xl:w-1/4 lg:w-1/3 md:w-1/2 w-11/12 backdrop-blur-md bg-white/10;
+    @apply mx-3 p-7 xl:w-1/4 lg:w-1/3 md:w-1/2 w-11/12 backdrop-blur-md bg-black/10;
 }
 
 .login-card-light {
@@ -52,4 +20,8 @@
 
 .login-card-form {
     @apply mt-7;
+}
+
+.login-captcha {
+    @apply w-0
 }

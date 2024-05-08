@@ -103,7 +103,7 @@ export default function ForgotPasswordForm({
           />
           <Turnstile
             sitekey={MV4_CLOUDFLARE_TURNSTILE_SITE_KEY}
-            theme={'dark'}
+            className={css.loginCaptcha}
             onVerify={token => {
               form.setFieldValue('cf_captcha', token);
             }}
