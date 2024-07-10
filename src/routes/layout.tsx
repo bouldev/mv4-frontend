@@ -8,8 +8,9 @@ import {
   createTheme,
   localStorageColorSchemeManager,
   MantineProvider,
+  Text,
 } from '@mantine/core';
-import { ModalsProvider } from '@mantine/modals';
+import { modals, ModalsProvider } from '@mantine/modals';
 import { Outlet, useNavigate } from '@modern-js/runtime/router';
 import ReactGA from 'react-ga4';
 import { Notifications } from '@mantine/notifications';
@@ -49,6 +50,7 @@ export default function Layout() {
         await userModelActions.init();
         if (window.location.pathname === '/') {
           navigate('/app');
+          return;
         }
         if (window.location.pathname === '/login') {
           const params = new URLSearchParams(window.location.search);
@@ -60,7 +62,23 @@ export default function Layout() {
           ) {
             navigate('/app');
           }
+          return;
         }
+        modals.openConfirmModal({
+          title: '安全警告',
+          children: (
+            <>
+              <Text size="sm">
+                我们发现您还未绑定邮箱，这是您找回账号的唯一途径。
+              </Text>
+              <Text size="sm">为确保账号安全，请绑定您的邮箱。</Text>
+            </>
+          ),
+          labels: { confirm: '前往绑定', cancel: '取消' },
+          onConfirm: () => {
+            window.location.href = '/login?action=set_new_email';
+          },
+        });
       } catch (e) {
         if (window.location.pathname !== '/login') {
           navigate('/login');
