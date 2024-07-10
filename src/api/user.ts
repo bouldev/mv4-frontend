@@ -1,27 +1,26 @@
 // POST /api/user/info
 export interface MV4UserInfo {
-  name: string;
-  bind_nickname: string;
+  username: string;
   email: string;
-  level: MV4UserPermissionLevel;
-  register_time: number;
-  product: {
-    type: MV4UserProductType;
-    expire: number;
-  };
+  permission: MV4UserPermissionLevel;
   balance: number;
+  fbCoins: number;
+  plan: MV4UserProductType;
+  planExpire: number;
+  isLifetimePlan: boolean;
 }
 
 export enum MV4UserPermissionLevel {
-  BANNED,
   USER,
+  DEALER, // 授权经销商
   ADMIN,
   OWNER,
 }
 
 export enum MV4UserProductType {
-  CLASSIC,
+  NO_SERVICES,
   PREMIUM,
   BUSINESS,
+  COMMERCIAL,
   DEVELOPER,
 }

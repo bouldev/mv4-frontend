@@ -4,6 +4,10 @@ export enum LoginActionType {
   LOGIN,
   REGISTER,
   FORGOT_PASSWORD,
+  RESET_PASSWORD,
+  CHANGE_PASSWORD,
+  BIND_EMAIL,
+  BIND_EMAIL_SUCCESS,
 }
 
 export type LoginSwitchStateFunc = (type: LoginActionType) => void;

@@ -33,6 +33,11 @@ export default defineConfig({
         }),
       );
     },
+    devServer: {
+      proxy: {
+        '/api': 'http://localhost:7001',
+      },
+    },
   },
   performance: {
     chunkSplit: {

@@ -1,18 +1,22 @@
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useState } from 'react';
 import { useDisclosure } from '@mantine/hooks';
 import {
   AppShell,
   Box,
   Burger,
   Group,
+  RemoveScroll,
+  ScrollArea,
+  Transition,
   useMantineColorScheme,
 } from '@mantine/core';
 import { useModel } from '@modern-js/runtime/model';
+import { useNavigate } from '@modern-js/runtime/router';
 import css from './mv4AppShell.module.css';
 import FBLogoWhite from '@/assets/logo-white.svg';
 import FBLogoBlack from '@/assets/logo-black.svg';
 import MV4AppShellNavBar from '@/ui/component/app/MV4AppShellNavBar';
-import { getThemeStyleCssName, ThemeSwitchModel } from '@/context/UIContext';
+import { getThemeStyleCssName, ThemeSwitchModel } from '@/model/UIModel';
 import bgCss from '@/ui/css/background.module.css';
 
 export default function MV4AppShell({
@@ -22,28 +26,38 @@ export default function MV4AppShell({
 }) {
   const [opened, { toggle }] = useDisclosure();
   const { colorScheme } = useMantineColorScheme();
-  const [themeState, themeActions] = useModel(ThemeSwitchModel);
+  const [themeState] = useModel(ThemeSwitchModel);
 
-  useEffect(() => {
-    themeActions.loadTheme();
-  }, []);
+  const [showMain, setShowMain] = useState(true);
+  const [pendingNavigate, setPendingNavigate] = useState(
+    window.location.pathname,
+  );
+  const navigate = useNavigate();
+
+  function onNavigatePage(path: string) {
+    toggle();
+    if (window.location.pathname === path) {
+      return;
+    }
+    setPendingNavigate(path);
+    setShowMain(false);
+  }
 
   return (
-    <Box
-      className={`${bgCss.bg} ${getThemeStyleCssName(themeState.style)} ${
-        colorScheme === 'light' && themeState.style === 'anime'
-          ? bgCss.bgAnimeLight
-          : ''
-      }`}
-    >
+    <RemoveScroll>
       <AppShell
+        className={`${bgCss.bg} ${getThemeStyleCssName(themeState.style)} ${
+          colorScheme === 'light' && themeState.style === 'anime'
+            ? bgCss.bgAnimeLight
+            : ''
+        }`}
         header={{ height: 60 }}
         navbar={{
           width: 300,
           breakpoint: 'sm',
           collapsed: { mobile: !opened },
         }}
-        padding="md"
+        padding={0}
       >
         <AppShell.Header
           className={`${css.appShellBg} ${
@@ -66,16 +80,35 @@ export default function MV4AppShell({
           </Group>
         </AppShell.Header>
         <AppShell.Navbar
-          style={{ display: 'flex' }}
           p="sm"
           className={`${css.appShellBg} ${
             colorScheme === 'light' ? css.appShellBgLight : ''
           }`}
         >
-          <MV4AppShellNavBar showAdminOptions={true} />
+          <MV4AppShellNavBar
+            toggleNavBar={toggle}
+            doNavigateTo={onNavigatePage}
+          />
         </AppShell.Navbar>
-        <AppShell.Main style={{ display: 'flex' }}>{children}</AppShell.Main>
+        <AppShell.Main style={{ display: 'flex', height: '100vh' }}>
+          <AppShell.Section grow component={ScrollArea} px={'md'}>
+            <Transition
+              mounted={showMain}
+              transition={'fade-up'}
+              onExited={() => {
+                navigate(pendingNavigate);
+                setShowMain(true);
+              }}
+            >
+              {styles => (
+                <Box py={'md'} style={styles}>
+                  {children}
+                </Box>
+              )}
+            </Transition>
+          </AppShell.Section>
+        </AppShell.Main>
       </AppShell>
-    </Box>
+    </RemoveScroll>
   );
 }

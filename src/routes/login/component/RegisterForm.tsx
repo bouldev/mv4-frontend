@@ -1,9 +1,11 @@
 import {
+  Alert,
   Anchor,
   Box,
   Button,
   Checkbox,
   Flex,
+  LoadingOverlay,
   PasswordInput,
   Text,
   TextInput,
@@ -11,15 +13,18 @@ import {
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import Turnstile from 'react-turnstile';
-import { modals } from '@mantine/modals';
 import { useState } from 'react';
-import { Check, Key, User } from '@icon-park/react';
+import { Caution, Check, Key, User } from '@icon-park/react';
+import SHA256 from 'crypto-js/sha256';
+import { notifications } from '@mantine/notifications';
 import css from '@/routes/login/page.module.css';
 import {
   LoginActionType,
   LoginSwitchStateFunc,
 } from '@/routes/login/model/loginActionTypeSwitchModel';
 import { MV4_CLOUDFLARE_TURNSTILE_SITE_KEY } from '@/MV4GlobalConfig';
+import { mv4RequestApi } from '@/api/mv4Client';
+import { MV4RequestError } from '@/api/base';
 
 export default function RegisterForm({
   switchFunc,
@@ -33,6 +38,7 @@ export default function RegisterForm({
       password: '',
       password_again: '',
       cf_captcha: '',
+      termsOfService: false,
     },
 
     validate: {
@@ -43,46 +49,81 @@ export default function RegisterForm({
   });
 
   const [btnEnabled, setBtnEnabled] = useState(true);
+  const [showLoading, setShowLoading] = useState(false);
+  const [hasErr, setHasErr] = useState(false);
+  const [errReason, setErrReason] = useState('');
 
   async function onSubmit(values: typeof form.values) {
-    setBtnEnabled(false);
-    if (values.username.length > 24 || values.username.length < 3) {
-      form.setFieldError('username', '用户名长度只能在 3 ~ 24 位之间');
+    if (!values.termsOfService) {
+      setErrReason('请先同意用户协议与隐私条款');
+      setHasErr(true);
       return;
     }
-    if (values.password.length < 6) {
-      form.setFieldError('password', '为确保安全，密码长度至少为6位及以上');
+    setHasErr(false);
+    setBtnEnabled(false);
+    if (values.username.length < 1) {
+      form.setFieldError('username', '请输入用户名');
+      return;
+    }
+    if (!/^\S+$/.test(values.username)) {
+      form.setFieldError('username', '用户名不得包含空格');
+      return;
+    }
+    if (values.username.length > 24) {
+      form.setFieldError('username', '用户名长度最大24位');
+      return;
+    }
+    if (values.password.length < 1) {
+      form.setFieldError('password', '请输入密码');
+      return;
+    }
+    if (values.password.length > 128) {
+      form.setFieldError('password', '密码太长');
       return;
     }
     if (values.password !== values.password_again) {
       form.setFieldError('password_again', '两次输入的密码不一致');
       return;
     }
-    if (!/^[^_0-9][0-9a-z_]+$/.test(values.username)) {
-      form.setFieldError(
-        'username',
-        '用户名只能包含数字、字母、下划线，必须以字母开头',
+    if (values.cf_captcha.length === 0) {
+      setErrReason(
+        '请先完成 Cloudflare 验证码。若仍然收到此提示，请刷新页面。',
       );
+      setHasErr(true);
       return;
     }
-    if (values.cf_captcha.length === 0) {
-      modals.open({
-        title: '错误',
-        children: (
-          <Box>
-            <Text>请先完成 Cloudflare 验证码。</Text>
-            <Text>若仍然收到此提示，请刷新页面。</Text>
-          </Box>
-        ),
-        onClose: () => {
-          setBtnEnabled(true);
+    setShowLoading(true);
+    console.log(values);
+    try {
+      await mv4RequestApi({
+        path: '/user/register',
+        data: {
+          username: values.username,
+          password: SHA256(values.password).toString(),
+          cf_captcha: values.cf_captcha,
         },
       });
+      notifications.show({
+        title: '提示',
+        message: `注册成功，请登录`,
+      });
+      switchFunc(LoginActionType.LOGIN);
+    } catch (e) {
+      if (e instanceof Error || e instanceof MV4RequestError) {
+        setErrReason(e.message);
+        setHasErr(true);
+      }
     }
+    setShowLoading(false);
+    setBtnEnabled(true);
   }
 
   return (
     <Box>
+      <LoadingOverlay
+        visible={showLoading}
+        overlayProps={{ radius: 'sm', blur: 2 }}
+      />
       <Title order={4}>注册</Title>
       <form
         onSubmit={form.onSubmit(values => onSubmit(values))}
@@ -96,20 +137,33 @@ export default function RegisterForm({
           direction="column"
           wrap="wrap"
         >
+          <Alert
+            color="red"
+            title="操作失败"
+            icon={<Caution />}
+            hidden={!hasErr}
+          >
+            <Text size={'sm'} fw={700}>
+              {errReason}
+            </Text>
+          </Alert>
           <TextInput
             label="用户名"
+            disabled={showLoading}
             leftSection={<User />}
             key={form.key('username')}
             {...form.getInputProps('username')}
           />
           <PasswordInput
             label="密码"
+            disabled={showLoading}
             leftSection={<Key />}
             key={form.key('password')}
             {...form.getInputProps('password', { type: 'input' })}
           />
           <PasswordInput
             label="再次输入密码"
+            disabled={showLoading}
             leftSection={<Key />}
             key={form.key('password_again')}
             {...form.getInputProps('password_again', { type: 'input' })}
@@ -121,7 +175,6 @@ export default function RegisterForm({
                 <Text size="xs">
                   我已阅读并同意遵守
                   <Anchor
-                    underline="hover"
                     size="xs"
                     href="https://fastbuilder.pro/enduser-license.html"
                   >
@@ -129,7 +182,6 @@ export default function RegisterForm({
                   </Anchor>
                   ，并且认可
                   <Anchor
-                    underline="hover"
                     size="xs"
                     href="https://fastbuilder.pro/privacy-policy.html"
                   >
@@ -144,6 +196,7 @@ export default function RegisterForm({
           <Turnstile
             sitekey={MV4_CLOUDFLARE_TURNSTILE_SITE_KEY}
             className={css.loginCaptcha}
+            action={'register'}
             onVerify={token => {
               form.setFieldValue('cf_captcha', token);
             }}
@@ -151,7 +204,6 @@ export default function RegisterForm({
           <Flex justify={'space-between'} align={'center'}>
             <Anchor
               type={'button'}
-              underline="hover"
               component={'button'}
               onClick={() => {
                 switchFunc(LoginActionType.LOGIN);

@@ -5,15 +5,18 @@ import {
   Button,
   Flex,
   LoadingOverlay,
+  PasswordInput,
   Text,
-  TextInput,
   Title,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import Turnstile from 'react-turnstile';
 import { useState } from 'react';
-import { Caution, Mail, SendEmail, User } from '@icon-park/react';
+import { Caution, Check, Key } from '@icon-park/react';
+import SHA256 from 'crypto-js/sha256';
 import { modals } from '@mantine/modals';
+import { useNavigate } from '@modern-js/runtime/router';
+import { useModel } from '@modern-js/runtime/model';
 import {
   LoginActionType,
   LoginSwitchStateFunc,
@@ -22,8 +25,9 @@ import css from '@/routes/login/page.module.css';
 import { MV4_CLOUDFLARE_TURNSTILE_SITE_KEY } from '@/MV4GlobalConfig';
 import { mv4RequestApi } from '@/api/mv4Client';
 import { MV4RequestError } from '@/api/base';
+import { GlobalUserModel } from '@/model/globalUserModel';
 
-export default function ForgotPasswordForm({
+export default function ChangePasswordForm({
   switchFunc,
 }: {
   switchFunc: LoginSwitchStateFunc;
@@ -31,14 +35,16 @@ export default function ForgotPasswordForm({
   const form = useForm({
     mode: 'uncontrolled',
     initialValues: {
-      username: '',
-      email: '',
+      password: '',
+      new_password: '',
+      new_password_again: '',
       cf_captcha: '',
     },
 
     validate: {
-      username: value => (value.length > 0 ? null : '用户名不得为空'),
-      email: value => (value.length > 0 ? null : '邮箱不得为空'),
+      password: value => (value.length > 0 ? null : '密码不得为空'),
+      new_password: value => (value.length > 0 ? null : '密码不得为空'),
+      new_password_again: value => (value.length > 0 ? null : '密码不得为空'),
     },
   });
 
@@ -46,24 +52,31 @@ export default function ForgotPasswordForm({
   const [showLoading, setShowLoading] = useState(false);
   const [hasErr, setHasErr] = useState(false);
   const [errReason, setErrReason] = useState('');
+  const navigate = useNavigate();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [userModelState, userModelActions] = useModel(GlobalUserModel);
 
   async function onSubmit(values: typeof form.values) {
     setHasErr(false);
     setBtnEnabled(false);
-    if (values.username.length < 1) {
-      form.setFieldError('username', '请输入用户名');
+    if (values.password.length < 1) {
+      form.setFieldError('password', '请输入密码');
       return;
     }
-    if (!/^\S+$/.test(values.username)) {
-      form.setFieldError('username', '用户名不得包含空格');
+    if (values.password.length > 128) {
+      form.setFieldError('password', '密码太长');
       return;
     }
-    if (values.username.length > 24) {
-      form.setFieldError('username', '用户名长度最大24位');
+    if (values.new_password.length < 1) {
+      form.setFieldError('password', '请输入密码');
       return;
     }
-    if (!/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/.test(values.email)) {
-      form.setFieldError('email', '邮箱格式错误');
+    if (values.new_password.length > 128) {
+      form.setFieldError('password', '密码太长');
+      return;
+    }
+    if (values.new_password !== values.new_password_again) {
+      form.setFieldError('password_again', '两次输入的密码不一致');
       return;
     }
     if (values.cf_captcha.length === 0) {
@@ -76,10 +89,10 @@ export default function ForgotPasswordForm({
     setShowLoading(true);
     try {
       await mv4RequestApi({
-        path: '/forgot-password/send-email',
+        path: '/user/change-password',
         data: {
-          username: values.username,
-          email: values.email,
+          password: SHA256(values.password).toString(),
+          new_password: SHA256(values.new_password).toString(),
           cf_captcha: values.cf_captcha,
         },
       });
@@ -87,16 +100,13 @@ export default function ForgotPasswordForm({
         title: '提示',
         children: (
           <Box>
-            <Text>
-              一封重置密码邮件已发送至您绑定的邮箱 {values.email}{' '}
-              ，请及时查看邮件，邮件有效期为5分钟。
-            </Text>
-            <Text>
-              若没有看到邮件，请检查垃圾箱、以及是否拦截了来自 no-reply@boul.dev
-              的邮件。
-            </Text>
+            <Text>密码修改成功，请使用新密码进行登录。</Text>
           </Box>
         ),
+        onClose: async () => {
+          switchFunc(LoginActionType.LOGIN);
+          await userModelActions.update();
+        },
       });
     } catch (e) {
       if (e instanceof Error || e instanceof MV4RequestError) {
@@ -114,7 +124,7 @@ export default function ForgotPasswordForm({
         visible={showLoading}
         overlayProps={{ radius: 'sm', blur: 2 }}
       />
-      <Title order={4}>找回账号</Title>
+      <Title order={4}>修改密码</Title>
       <form
         onSubmit={form.onSubmit(values => onSubmit(values))}
         onInput={() => {
@@ -137,25 +147,31 @@ export default function ForgotPasswordForm({
               {errReason}
             </Text>
           </Alert>
-          <Text size="sm">注意：您需要事先绑定邮箱，本功能才会起作用。</Text>
-          <TextInput
-            label="用户名"
+          <PasswordInput
+            label="原密码"
             disabled={showLoading}
-            leftSection={<User />}
-            key={form.key('username')}
-            {...form.getInputProps('username')}
+            leftSection={<Key />}
+            key={form.key('password')}
+            {...form.getInputProps('password', { type: 'input' })}
           />
-          <TextInput
-            label="邮箱"
+          <PasswordInput
+            label="新密码"
             disabled={showLoading}
-            leftSection={<Mail />}
-            key={form.key('email')}
-            {...form.getInputProps('email')}
+            leftSection={<Key />}
+            key={form.key('new_password')}
+            {...form.getInputProps('new_password', { type: 'input' })}
+          />
+          <PasswordInput
+            label="再次输入新密码"
+            disabled={showLoading}
+            leftSection={<Key />}
+            key={form.key('new_password_again')}
+            {...form.getInputProps('new_password_again', { type: 'input' })}
           />
           <Turnstile
             sitekey={MV4_CLOUDFLARE_TURNSTILE_SITE_KEY}
             className={css.loginCaptcha}
-            action={'forgot_password'}
+            action={'change_password'}
             onVerify={token => {
               form.setFieldValue('cf_captcha', token);
             }}
@@ -165,18 +181,18 @@ export default function ForgotPasswordForm({
               type={'button'}
               component={'button'}
               onClick={() => {
-                switchFunc(LoginActionType.LOGIN);
+                navigate('/app/user');
               }}
             >
-              返回登录
+              返回
             </Anchor>
             <Button
-              leftSection={<SendEmail />}
+              leftSection={<Check />}
               type={'submit'}
               variant="filled"
               disabled={!btnEnabled}
             >
-              找回密码
+              提交
             </Button>
           </Flex>
         </Flex>

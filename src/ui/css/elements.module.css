@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 .app-shell-bg {
-    @apply backdrop-blur-md bg-black/30;
+    @apply bg-black/30;
 }
 
 .app-shell-bg-light {

@@ -1,7 +1,7 @@
 import {
   ActionIcon,
+  AppShell,
   Flex,
-  Group,
   NavLink,
   ScrollArea,
   SegmentedControl,
@@ -14,28 +14,37 @@ import {
   Download,
   EveryUser,
   Help,
+  Logout,
   Moon,
   MoreApp,
   Right,
   Server,
+  Shop,
   SunOne,
   Theme,
   User,
 } from '@icon-park/react';
 import { useEffect, useState } from 'react';
 import { useModel } from '@modern-js/runtime/model';
-import { useElementSize } from '@mantine/hooks';
-import { ThemeSwitchModel } from '@/context/UIContext';
+import { notifications } from '@mantine/notifications';
+import { useNavigate } from '@modern-js/runtime/router';
+import { ThemeSwitchModel } from '@/model/UIModel';
+import { mv4RequestApi } from '@/api/mv4Client';
+import { GlobalUserModel } from '@/model/globalUserModel';
+import { MV4UserPermissionLevel } from '@/api/user';
 
 export default function MV4AppShellNavBar({
-  showAdminOptions,
+  doNavigateTo,
+  toggleNavBar,
 }: {
-  showAdminOptions: boolean;
+  doNavigateTo: (path: string) => void;
+  toggleNavBar: VoidFunction;
 }) {
   const navigateItemsUser = [
     { name: '公告', link: '/app', icon: <Announcement /> },
     { name: '管理', link: '/app/manage', icon: <MoreApp /> },
     { name: '用户', link: '/app/user', icon: <User /> },
+    { name: '商店', link: '/app/shop', icon: <Shop /> },
     { name: '下载', link: '/app/download', icon: <Download /> },
     { name: '关于', link: '/app/about', icon: <Help /> },
   ];
@@ -48,10 +57,13 @@ export default function MV4AppShellNavBar({
 
   const [page, setPage] = useState('user');
 
-  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
+  const { colorScheme, toggleColorScheme } = useMantineColorScheme({
+    keepTransitions: true,
+  });
   const [themeState, themeActions] = useModel(ThemeSwitchModel);
+  const [userModelState, userModelActions] = useModel(GlobalUserModel);
 
-  const baseElement = useElementSize();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (window.location.pathname.startsWith('/app/admin/')) {
@@ -60,9 +72,9 @@ export default function MV4AppShellNavBar({
   }, []);
 
   return (
-    <Stack gap={'sm'} justify={'space-between'} style={{ flexGrow: 1 }}>
-      <Stack gap={'sm'} style={{ flexGrow: 1 }}>
-        {showAdminOptions && (
+    <>
+      {userModelState.user.permission >= MV4UserPermissionLevel.ADMIN && (
+        <AppShell.Section mb={'xs'}>
           <SegmentedControl
             fullWidth
             value={page}
@@ -72,46 +84,46 @@ export default function MV4AppShellNavBar({
               { label: '管理', value: 'admin' },
             ]}
           />
-        )}
-        <Flex ref={baseElement.ref} style={{ flexGrow: 1 }}>
-          <ScrollArea h={baseElement.height} style={{ flexGrow: 1 }}>
-            <Stack gap={'sm'}>
-              {page === 'user' &&
-                navigateItemsUser.map(value => (
-                  <NavLink
-                    key={value.name}
-                    href={value.link}
-                    active={value.link === window.location.pathname}
-                    label={value.name}
-                    leftSection={value.icon}
-                    rightSection={
-                      value.link === window.location.pathname && <Right />
-                    }
-                  />
-                ))}
-              {page === 'admin' &&
-                navigateItemsAdmin.map(value => (
-                  <NavLink
-                    key={value.name}
-                    href={value.link}
-                    active={value.link === window.location.pathname}
-                    label={value.name}
-                    leftSection={value.icon}
-                    rightSection={
-                      value.link === window.location.pathname && <Right />
-                    }
-                  />
-                ))}
-            </Stack>
-          </ScrollArea>
-        </Flex>
-      </Stack>
-      <Group>
-        <Flex justify={'flex-end'} m={4} gap={'xs'}>
+        </AppShell.Section>
+      )}
+      <AppShell.Section grow component={ScrollArea}>
+        <Stack gap={'sm'}>
+          {page === 'user' &&
+            navigateItemsUser.map(value => (
+              <NavLink
+                key={value.name}
+                onClick={() => doNavigateTo(value.link)}
+                active={value.link === window.location.pathname}
+                label={value.name}
+                leftSection={value.icon}
+                rightSection={
+                  value.link === window.location.pathname && <Right />
+                }
+              />
+            ))}
+          {page === 'admin' &&
+            userModelState.user.permission >= MV4UserPermissionLevel.ADMIN &&
+            navigateItemsAdmin.map(value => (
+              <NavLink
+                key={value.name}
+                onClick={() => doNavigateTo(value.link)}
+                active={value.link === window.location.pathname}
+                label={value.name}
+                leftSection={value.icon}
+                rightSection={
+                  value.link === window.location.pathname && <Right />
+                }
+              />
+            ))}
+        </Stack>
+      </AppShell.Section>
+      <AppShell.Section>
+        <Flex justify={'flex-start'} m={4} gap={'xs'}>
           <ActionIcon
             variant="default"
             size="xl"
             onClick={() => {
+              toggleNavBar();
               if (themeState.style === 'default') {
                 themeActions.changeStyle('anime');
               } else {
@@ -124,12 +136,40 @@ export default function MV4AppShellNavBar({
           <ActionIcon
             variant="default"
             size="xl"
-            onClick={() => toggleColorScheme()}
+            onClick={() => {
+              toggleNavBar();
+              toggleColorScheme();
+              notifications.clean();
+              notifications.show({
+                message: `已${
+                  colorScheme !== 'dark' ? '启用' : '禁用'
+                }深色模式`,
+              });
+            }}
           >
             {colorScheme === 'light' ? <Moon /> : <SunOne />}
           </ActionIcon>
+          <ActionIcon
+            variant="default"
+            size="xl"
+            onClick={async () => {
+              notifications.show({
+                message: '已退出登录',
+              });
+              navigate('/login');
+              try {
+                await mv4RequestApi({
+                  methodGet: true,
+                  path: '/user/logout',
+                });
+                await userModelActions.update();
+              } catch {}
+            }}
+          >
+            <Logout />
+          </ActionIcon>
         </Flex>
-      </Group>
-    </Stack>
+      </AppShell.Section>
+    </>
   );
 }
