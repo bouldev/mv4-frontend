@@ -114,7 +114,6 @@ export default function AnnouncementPage() {
         } catch (e) {
           if (e instanceof Error || e instanceof MV4RequestError) {
             console.error(e);
-            setShowLoading(false);
             notifications.show({
               message: e.message,
               color: 'red',

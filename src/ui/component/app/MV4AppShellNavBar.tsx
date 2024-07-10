@@ -4,8 +4,8 @@ import {
   Flex,
   NavLink,
   ScrollArea,
-  SegmentedControl,
   Stack,
+  Tabs,
   useMantineColorScheme,
 } from '@mantine/core';
 import {
@@ -27,7 +27,7 @@ import {
 import { useEffect, useState } from 'react';
 import { useModel } from '@modern-js/runtime/model';
 import { notifications } from '@mantine/notifications';
-import { useNavigate } from '@modern-js/runtime/router';
+import { useLocation, useNavigate } from '@modern-js/runtime/router';
 import { ThemeSwitchModel } from '@/model/UIModel';
 import { mv4RequestApi } from '@/api/mv4Client';
 import { GlobalUserModel } from '@/model/globalUserModel';
@@ -53,9 +53,14 @@ export default function MV4AppShellNavBar({
     { name: '用户管理', link: '/app/admin/user', icon: <EveryUser /> },
     { name: '商品管理', link: '/app/admin/item', icon: <Commodity /> },
     { name: '服务配置', link: '/app/admin/service', icon: <Server /> },
+    {
+      name: '发布公告',
+      link: '/app/admin/publish-announcement',
+      icon: <Announcement />,
+    },
   ];
 
-  const [page, setPage] = useState('user');
+  const [activeTab, setActiveTab] = useState<string | null>('user');
 
   const { colorScheme, toggleColorScheme } = useMantineColorScheme({
     keepTransitions: true,
@@ -64,31 +69,31 @@ export default function MV4AppShellNavBar({
   const [userModelState, userModelActions] = useModel(GlobalUserModel);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    if (window.location.pathname.startsWith('/app/admin/')) {
-      setPage('admin');
+    if (location.pathname.startsWith('/app/admin/')) {
+      setActiveTab('admin');
+    } else {
+      setActiveTab('user');
     }
-  }, []);
+  }, [location]);
 
   return (
     <>
       {userModelState.user.permission >= MV4UserPermissionLevel.ADMIN && (
         <AppShell.Section mb={'xs'}>
-          <SegmentedControl
-            fullWidth
-            value={page}
-            onChange={setPage}
-            data={[
-              { label: '一般', value: 'user' },
-              { label: '管理', value: 'admin' },
-            ]}
-          />
+          <Tabs value={activeTab} onChange={setActiveTab}>
+            <Tabs.List grow>
+              <Tabs.Tab value="user">一般</Tabs.Tab>
+              <Tabs.Tab value="admin">管理</Tabs.Tab>
+            </Tabs.List>
+          </Tabs>
         </AppShell.Section>
       )}
       <AppShell.Section grow component={ScrollArea}>
         <Stack gap={'sm'}>
-          {page === 'user' &&
+          {activeTab === 'user' &&
             navigateItemsUser.map(value => (
               <NavLink
                 key={value.name}
@@ -101,7 +106,7 @@ export default function MV4AppShellNavBar({
                 }
               />
             ))}
-          {page === 'admin' &&
+          {activeTab === 'admin' &&
             userModelState.user.permission >= MV4UserPermissionLevel.ADMIN &&
             navigateItemsAdmin.map(value => (
               <NavLink
