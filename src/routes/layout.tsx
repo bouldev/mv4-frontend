@@ -8,6 +8,7 @@ import {
   createTheme,
   localStorageColorSchemeManager,
   MantineProvider,
+  Stack,
   Text,
 } from '@mantine/core';
 import { modals, ModalsProvider } from '@mantine/modals';
@@ -67,12 +68,12 @@ export default function Layout() {
         modals.openConfirmModal({
           title: '安全警告',
           children: (
-            <>
+            <Stack>
               <Text size="sm">
                 我们发现您还未绑定邮箱，这是您找回账号的唯一途径。
               </Text>
               <Text size="sm">为确保账号安全，请绑定您的邮箱。</Text>
-            </>
+            </Stack>
           ),
           labels: { confirm: '前往绑定', cancel: '取消' },
           onConfirm: () => {

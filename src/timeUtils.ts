@@ -37,3 +37,26 @@ export function formatTime(dateTime: number, flag: boolean) {
     return '';
   }
 }
+
+export function getDurationChineseString(sec: number) {
+  let durationStr = '';
+  const days = Math.floor(sec / 86400);
+  const hours = Math.floor((sec % 86400) / 3600);
+  const minutes = Math.floor(((sec % 86400) % 3600) / 60);
+  const seconds = Math.floor(((sec % 86400) % 3600) % 60);
+  if (days > 0) {
+    durationStr = `${days}天${hours}小时${minutes}分${seconds}秒`;
+  } else if (hours > 0) {
+    durationStr = `${hours}小时${minutes}分${seconds}秒`;
+  } else if (minutes > 0) {
+    durationStr = `${minutes}分${seconds}秒`;
+  } else if (seconds > 0) {
+    durationStr = `${seconds}秒`;
+  }
+  // 凑合下吧。。。
+  durationStr = durationStr
+    .replaceAll('0小时', '')
+    .replaceAll('0分', '')
+    .replaceAll('0秒', '');
+  return durationStr;
+}
