@@ -22,6 +22,7 @@ import {
   Shop,
   SunOne,
   Theme,
+  TransactionOrder,
   User,
 } from '@icon-park/react';
 import { useEffect, useState } from 'react';
@@ -51,6 +52,7 @@ export default function MV4AppShellNavBar({
 
   const navigateItemsAdmin = [
     { name: '用户管理', link: '/app/admin/user', icon: <EveryUser /> },
+    { name: '订单管理', link: '/app/admin/order', icon: <TransactionOrder /> },
     { name: '商品管理', link: '/app/admin/item', icon: <Commodity /> },
     { name: '服务配置', link: '/app/admin/service', icon: <Server /> },
     {

@@ -20,7 +20,7 @@ import {
   permissionToString,
   productExpireDateToString,
   productTypeToString,
-} from '@/stringUtils';
+} from '@/utils/stringUtils';
 import { GlobalUserModel } from '@/model/globalUserModel';
 
 export default function UserPage() {

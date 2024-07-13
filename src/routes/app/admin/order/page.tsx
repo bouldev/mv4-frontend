@@ -12,44 +12,22 @@ import {
   useMantineColorScheme,
 } from '@mantine/core';
 import { useState } from 'react';
+import { modals } from '@mantine/modals';
 import PageTitle from '@/ui/component/app/PageTitle';
 import eleCss from '@/ui/css/elements.module.css';
+import { MV4Order } from '@/api/order';
+import { getOrderStatusEmoji } from '@/utils/orderUtils';
 
-export default function ManagePage() {
+export default function OrderPage() {
   const { colorScheme } = useMantineColorScheme();
   const [filterAdminChecked, setFilterAdminChecked] = useState(false);
   const [filterBalanceChecked, setFilterBalanceChecked] = useState(false);
 
-  const mock = [
-    {
-      username: 'Alice',
-      permission: 0,
-      fbCoins: 1,
-      balance: 0,
-    },
-    {
-      username: 'Bob',
-      permission: 1,
-      fbCoins: 24,
-      balance: 74,
-    },
-    {
-      username: 'Chara',
-      permission: 2,
-      fbCoins: 666,
-      balance: 666,
-    },
-    {
-      username: 'David',
-      permission: 3,
-      fbCoins: 888,
-      balance: 888,
-    },
-  ];
+  const mock: MV4Order[] = [];
 
   return (
     <Stack>
-      <PageTitle>用户管理</PageTitle>
+      <PageTitle>订单管理</PageTitle>
       <Stack gap={'sm'}>
         <Card
           shadow="sm"
@@ -61,24 +39,46 @@ export default function ManagePage() {
           }`}
         >
           <Stack gap={'md'}>
-            <Title order={4}>用户列表</Title>
+            <Title order={4}>订单列表</Title>
             <Table highlightOnHover withTableBorder>
               <Table.Thead>
                 <Table.Tr>
+                  <Table.Th>OrderNo</Table.Th>
                   <Table.Th>Username</Table.Th>
-                  <Table.Th>FBCoins</Table.Th>
-                  <Table.Th>Balance</Table.Th>
+                  <Table.Th>Price</Table.Th>
+                  <Table.Th>Gateway</Table.Th>
+                  <Table.Th>Status</Table.Th>
                   <Table.Th>Actions</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
                 {mock.map(item => (
-                  <Table.Tr key={item.username}>
+                  <Table.Tr key={item.orderNo}>
+                    <Table.Td>{item.orderNo}</Table.Td>
                     <Table.Td>{item.username}</Table.Td>
-                    <Table.Td>{item.fbCoins}</Table.Td>
-                    <Table.Td>{item.balance}</Table.Td>
                     <Table.Td>
-                      <Button size="xs">Manage</Button>
+                      {item.price === item.realPrice
+                        ? String(item.price)
+                        : `${item.price} (real: ${item.realPrice})`}
+                    </Table.Td>
+                    <Table.Td>{item.gateway}</Table.Td>
+                    <Table.Td>{getOrderStatusEmoji(item.orderStatus)}</Table.Td>
+                    <Table.Td>
+                      <Group>
+                        <Button
+                          bg="gray"
+                          size="xs"
+                          onClick={() => {
+                            modals.open({
+                              title: <Text>Order {item.orderNo}</Text>,
+                              children: <Text>{item.desc}</Text>,
+                            });
+                          }}
+                        >
+                          Desc.
+                        </Button>
+                        <Button size="xs">Manage</Button>
+                      </Group>
                     </Table.Td>
                   </Table.Tr>
                 ))}

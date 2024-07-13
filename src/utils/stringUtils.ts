@@ -3,7 +3,7 @@ import {
   MV4UserPermissionLevel,
   MV4UserProductType,
 } from '@/api/user';
-import { formatTime, nowUnix } from '@/timeUtils';
+import { formatTime, nowUnix } from '@/utils/timeUtils';
 
 export function permissionToString(level: MV4UserPermissionLevel) {
   switch (level) {
@@ -25,13 +25,13 @@ export function productTypeToString(productType: MV4UserProductType) {
     case MV4UserProductType.NO_SERVICES:
       return '无';
     case MV4UserProductType.PREMIUM:
-      return 'FastBuilder Premium';
+      return 'Premium';
     case MV4UserProductType.BUSINESS:
-      return 'FastBuilder Business';
+      return 'Business';
     case MV4UserProductType.COMMERCIAL:
-      return 'FastBuilder Commercial';
+      return 'Commercial';
     case MV4UserProductType.DEVELOPER:
-      return 'FastBuilder Developer';
+      return 'Developer';
     default:
       return 'unknown';
   }

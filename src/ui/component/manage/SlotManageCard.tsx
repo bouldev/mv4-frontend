@@ -13,7 +13,11 @@ import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import eleCss from '@/ui/css/elements.module.css';
 import { ServerSlot, ServerSlotDataType } from '@/api/slot';
-import { formatTime, getDurationChineseString, nowUnix } from '@/timeUtils';
+import {
+  formatTime,
+  getDurationChineseString,
+  nowUnix,
+} from '@/utils/timeUtils';
 
 export default function SlotManageCard() {
   const { colorScheme } = useMantineColorScheme();
