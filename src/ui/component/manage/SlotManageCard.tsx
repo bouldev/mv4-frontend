@@ -8,7 +8,7 @@ import {
   Title,
   useMantineColorScheme,
 } from '@mantine/core';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import eleCss from '@/ui/css/elements.module.css';
@@ -18,68 +18,47 @@ import {
   getDurationChineseString,
   nowUnix,
 } from '@/utils/timeUtils';
+import { mv4RequestApi } from '@/api/mv4Client';
+import { MV4RequestError } from '@/api/base';
 
 export default function SlotManageCard() {
   const { colorScheme } = useMantineColorScheme();
+  const [cardLoading, setCardLoading] = useState(true);
   const currentInitInput = useRef('');
   const currentMarkInput = useRef('');
+  const [slots, setSlots] = useState<ServerSlot[]>([]);
 
-  const mock: ServerSlot[] = [
-    {
-      slotId: '1145141',
-      data: '987654',
-      mark: '生存服但是过期了',
-      dataType: ServerSlotDataType.SERVER_ID_SLOT,
-      expireToClean: true,
-      slotTime: 60 * 60 * 24 * 30,
-      expire: 1623301748,
-    },
-    {
-      slotId: '1145142',
-      data: '123456',
-      mark: '生存服',
-      dataType: ServerSlotDataType.SERVER_ID_SLOT,
-      expireToClean: true,
-      slotTime: 60 * 60 * 24 * 30,
-      expire: 1723301748,
-    },
-    {
-      slotId: '11451424',
-      data: '24531',
-      mark: '建筑服',
-      dataType: ServerSlotDataType.SERVER_ID_SLOT,
-      expireToClean: false,
-      slotTime: 60 * 60 * 24 * 30,
-      expire: 1623301748,
-    },
-    {
-      slotId: '114514241',
-      data: '24531',
-      mark: '',
-      dataType: ServerSlotDataType.SERVER_ID_SLOT,
-      expireToClean: false,
-      slotTime: 60 * 60 * 24 * 30,
-      expire: 1623301748,
-    },
-    {
-      slotId: '1145143',
-      data: '23333',
-      mark: '好朋友',
-      dataType: ServerSlotDataType.PLAYER_ID_SLOT,
-      expireToClean: false,
-      slotTime: 60 * 60 * 24 * 30,
-      expire: 1723301748,
-    },
-    {
-      slotId: '1145144',
-      data: '',
-      mark: '',
-      dataType: ServerSlotDataType.SERVER_ID_SLOT,
-      expireToClean: true,
-      slotTime: 60 * 60 * 24 * 30,
-      expire: -1,
-    },
-  ];
+  useEffect(() => {
+    async function init() {
+      await updateSlotList();
+    }
+    init();
+  }, []);
+
+  async function updateSlotList() {
+    setCardLoading(true);
+    try {
+      const ret = await mv4RequestApi<
+        any,
+        {
+          list: ServerSlot[];
+        }
+      >({
+        path: '/server-slot/get-slots-list',
+        methodGet: true,
+      });
+      setSlots(ret.data.list);
+      setCardLoading(false);
+    } catch (e) {
+      console.error(e);
+      setCardLoading(false);
+      notifications.show({
+        message: '获取卡槽列表失败，请刷新页面',
+        color: 'red',
+      });
+      throw e;
+    }
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async function onClickInitThisSlot(thisSlot: ServerSlot, index: number) {
@@ -151,8 +130,29 @@ export default function SlotManageCard() {
                   </Stack>
                 ),
                 labels: { confirm: '确定', cancel: '取消' },
-                onConfirm: () => {
-                  // todo: request api
+                onConfirm: async () => {
+                  try {
+                    await mv4RequestApi({
+                      path: '/server-slot/init-slot',
+                      data: {
+                        slotId: thisSlot.slotId,
+                        data: currentInitInput.current,
+                      },
+                    });
+                    notifications.show({
+                      message: '初始化成功',
+                    });
+                    await updateSlotList();
+                  } catch (e) {
+                    console.error(e);
+                    if (e instanceof MV4RequestError || e instanceof Error) {
+                      notifications.show({
+                        title: '初始化卡槽失败',
+                        message: e.message,
+                        color: 'red',
+                      });
+                    }
+                  }
                 },
               });
             }}
@@ -186,7 +186,7 @@ export default function SlotManageCard() {
             label="新备注"
             placeholder={'请输入'}
             onChange={e => {
-              currentInitInput.current = e.currentTarget.value.replaceAll(
+              currentMarkInput.current = e.currentTarget.value.replaceAll(
                 ' ',
                 '',
               );
@@ -194,8 +194,8 @@ export default function SlotManageCard() {
           />
           <Button
             fullWidth
-            onClick={() => {
-              if (currentInitInput.current.length === 0) {
+            onClick={async () => {
+              if (currentMarkInput.current.length === 0) {
                 notifications.show({
                   message: '请输入内容',
                   color: 'red',
@@ -204,7 +204,28 @@ export default function SlotManageCard() {
                 return;
               }
               modals.closeAll();
-              // todo: request api
+              try {
+                await mv4RequestApi({
+                  path: '/server-slot/edit-mark',
+                  data: {
+                    slotId: thisSlot.slotId,
+                    mark: currentMarkInput.current,
+                  },
+                });
+                notifications.show({
+                  message: '修改成功',
+                });
+                await updateSlotList();
+              } catch (e) {
+                console.error(e);
+                if (e instanceof MV4RequestError || e instanceof Error) {
+                  notifications.show({
+                    title: '修改卡槽备注失败',
+                    message: e.message,
+                    color: 'red',
+                  });
+                }
+              }
             }}
             mt="md"
           >
@@ -236,8 +257,28 @@ export default function SlotManageCard() {
       ),
       labels: { confirm: '确定删除', cancel: '取消' },
       confirmProps: { bg: 'red' },
-      onConfirm: () => {
-        // todo: request api
+      onConfirm: async () => {
+        try {
+          await mv4RequestApi({
+            path: '/server-slot/drop-slot',
+            data: {
+              slotId: thisSlot.slotId,
+            },
+          });
+          notifications.show({
+            message: '删除成功',
+          });
+          await updateSlotList();
+        } catch (e) {
+          console.error(e);
+          if (e instanceof MV4RequestError || e instanceof Error) {
+            notifications.show({
+              title: '删除卡槽失败',
+              message: e.message,
+              color: 'red',
+            });
+          }
+        }
       },
     });
   }
@@ -291,91 +332,98 @@ export default function SlotManageCard() {
     >
       <Stack gap={'md'}>
         <Title order={4}>您的槽位</Title>
-        {mock.map((item, i) => (
-          <Card
-            key={item.slotId}
-            shadow="sm"
-            padding="sm"
-            radius="md"
-            withBorder
-            className={`${eleCss.appShellBg} ${
-              colorScheme === 'light' ? eleCss.appShellBgLight : ''
-            }`}
-          >
-            <Group justify={'space-between'}>
-              <Stack>
-                {item.expire !== -1 ? (
-                  <>
-                    <Text size={'sm'}>
-                      {item.dataType === ServerSlotDataType.PLAYER_ID_SLOT &&
-                        '游戏账号 SLOT'}
-                      {item.dataType === ServerSlotDataType.SERVER_ID_SLOT &&
-                        '租赁服号 SLOT'}
-                      ：{item.mark ? `${item.mark} (${item.data})` : item.data}
-                    </Text>
-                    <Group>
+        {cardLoading && (
+          <Text size={'sm'} fs={'italic'}>
+            请稍等，正在加载。。。
+          </Text>
+        )}
+        {!cardLoading &&
+          slots.map((item, i) => (
+            <Card
+              key={item.slotId}
+              shadow="sm"
+              padding="sm"
+              radius="md"
+              withBorder
+              className={`${eleCss.appShellBg} ${
+                colorScheme === 'light' ? eleCss.appShellBgLight : ''
+              }`}
+            >
+              <Group justify={'space-between'}>
+                <Stack>
+                  {item.expire !== -1 ? (
+                    <>
+                      <Text size={'sm'}>
+                        {item.dataType === ServerSlotDataType.PLAYER_ID_SLOT &&
+                          '游戏账号 SLOT'}
+                        {item.dataType === ServerSlotDataType.SERVER_ID_SLOT &&
+                          '租赁服号 SLOT'}
+                        ：
+                        {item.mark ? `${item.mark} (${item.data})` : item.data}
+                      </Text>
+                      <Group>
+                        {item.expireToClean && (
+                          <Text size={'sm'} c={'red'} fw={700}>
+                            （自动删除）
+                          </Text>
+                        )}
+                        <Text size={'xs'}>
+                          {item.expire < nowUnix() ? '已过期' : '过期时间'}：
+                          {formatTime(item.expire, true)}
+                        </Text>
+                      </Group>
+                    </>
+                  ) : (
+                    <Group gap={0} p={0}>
+                      <Text size={'sm'}>
+                        {item.dataType === ServerSlotDataType.PLAYER_ID_SLOT &&
+                          '游戏账号 SLOT '}
+                        {item.dataType === ServerSlotDataType.SERVER_ID_SLOT &&
+                          '租赁服号 SLOT '}
+                        (未使用)
+                      </Text>
                       {item.expireToClean && (
                         <Text size={'sm'} c={'red'} fw={700}>
                           （自动删除）
                         </Text>
                       )}
-                      <Text size={'xs'}>
-                        {item.expire < nowUnix() ? '已过期' : '过期时间'}：
-                        {formatTime(item.expire, true)}
-                      </Text>
                     </Group>
-                  </>
-                ) : (
-                  <Group gap={0} p={0}>
-                    <Text size={'sm'}>
-                      {item.dataType === ServerSlotDataType.PLAYER_ID_SLOT &&
-                        '游戏账号 SLOT '}
-                      {item.dataType === ServerSlotDataType.SERVER_ID_SLOT &&
-                        '租赁服号 SLOT '}
-                      (未使用)
-                    </Text>
-                    {item.expireToClean && (
-                      <Text size={'sm'} c={'red'} fw={700}>
-                        （自动删除）
-                      </Text>
-                    )}
-                  </Group>
-                )}
-              </Stack>
-              <Group gap={'xs'}>
-                {item.expire < nowUnix() && item.expire !== -1 && (
-                  <Button
-                    bg={'red'}
-                    onClick={() => {
-                      onClickDropThisSlot(item, i);
-                    }}
-                  >
-                    删除
-                  </Button>
-                )}
-                {item.data.length === 0 && (
-                  <Button
-                    bg={'lime'}
-                    onClick={() => {
-                      onClickInitThisSlot(item, i);
-                    }}
-                  >
-                    初始化
-                  </Button>
-                )}
-                {item.data.length > 0 && item.expire > nowUnix() && (
-                  <Button
-                    onClick={() => {
-                      onClickManageThisSlot(item, i);
-                    }}
-                  >
-                    管理
-                  </Button>
-                )}
+                  )}
+                </Stack>
+                <Group gap={'xs'}>
+                  {item.expire < nowUnix() && item.expire !== -1 && (
+                    <Button
+                      bg={'red'}
+                      onClick={() => {
+                        onClickDropThisSlot(item, i);
+                      }}
+                    >
+                      删除
+                    </Button>
+                  )}
+                  {item.data.length === 0 && (
+                    <Button
+                      bg={'lime'}
+                      onClick={() => {
+                        onClickInitThisSlot(item, i);
+                      }}
+                    >
+                      初始化
+                    </Button>
+                  )}
+                  {item.data.length > 0 && item.expire > nowUnix() && (
+                    <Button
+                      onClick={() => {
+                        onClickManageThisSlot(item, i);
+                      }}
+                    >
+                      管理
+                    </Button>
+                  )}
+                </Group>
               </Group>
-            </Group>
-          </Card>
-        ))}
+            </Card>
+          ))}
       </Stack>
     </Card>
   );

@@ -7,13 +7,16 @@ import {
   Group,
   Stack,
   Text,
+  TextInput,
   Title,
   useMantineColorScheme,
 } from '@mantine/core';
 import { modals } from '@mantine/modals';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MD5 } from 'crypto-js';
 import { useModel } from '@modern-js/runtime/model';
+import { useNavigate } from '@modern-js/runtime/router';
+import { notifications } from '@mantine/notifications';
 import PageTitle from '@/ui/component/app/PageTitle';
 import eleCss from '@/ui/css/elements.module.css';
 import {
@@ -22,16 +25,137 @@ import {
   productTypeToString,
 } from '@/utils/stringUtils';
 import { GlobalUserModel } from '@/model/globalUserModel';
+import { MV4RequestError } from '@/api/base';
+import { mv4RequestApi } from '@/api/mv4Client';
+import { ModalConfirmPlayerWithAvatar } from '@/ui/component/ModalConfirmPlayerWithAvatar';
+import { nemcQueryPlayer } from '@/api/nemcQueryPlayer';
 
 export default function UserPage() {
   const { colorScheme } = useMantineColorScheme();
   const [userModelState, userModelActions] = useModel(GlobalUserModel);
   const [showMore, setShowMore] = useState(false);
+  const [showLoading, setShowLoading] = useState(true);
+  const [bindPlayerInfo, setBindingPlayerInfo] = useState({
+    name: '',
+    uid: '',
+  });
+  const currentPlayerNameInput = useRef('');
+  const navigate = useNavigate();
+
+  async function getBindPlayerInfo() {
+    setShowLoading(true);
+    try {
+      const ret = await mv4RequestApi<
+        any,
+        {
+          name: string;
+          uid: string;
+        }
+      >({
+        path: '/user/bind-player/info',
+        methodGet: true,
+      });
+      setBindingPlayerInfo(ret.data);
+      setShowLoading(false);
+    } catch (e) {
+      console.error(e);
+      if (e instanceof MV4RequestError || e instanceof Error) {
+        notifications.show({
+          title: '获取绑定玩家信息失败，请刷新页面',
+          message: e.message,
+          color: 'red',
+        });
+      }
+    }
+  }
+
+  async function onClickBindPlayer() {
+    currentPlayerNameInput.current = '';
+    modals.open({
+      title: '绑定游戏账号',
+      closeOnEscape: false,
+      closeOnClickOutside: false,
+      children: (
+        <Stack>
+          <TextInput
+            label="玩家昵称"
+            placeholder={'请输入'}
+            onChange={e => {
+              currentPlayerNameInput.current = e.currentTarget.value.replaceAll(
+                ' ',
+                '',
+              );
+            }}
+          />
+          <Button
+            fullWidth
+            onClick={async () => {
+              if (currentPlayerNameInput.current.length === 0) {
+                notifications.show({
+                  message: '请输入内容',
+                  color: 'red',
+                  autoClose: 1000,
+                });
+                return;
+              }
+              modals.closeAll();
+              try {
+                const playerInfo = await nemcQueryPlayer(
+                  currentPlayerNameInput.current,
+                );
+                ModalConfirmPlayerWithAvatar(
+                  '请确认',
+                  '确定绑定这个玩家吗？一旦绑定将不可修改。',
+                  playerInfo,
+                  async () => {
+                    try {
+                      await mv4RequestApi({
+                        path: '/user/bind-player/bind',
+                        data: {
+                          playerName: currentPlayerNameInput.current,
+                        },
+                      });
+                      notifications.show({
+                        message: '绑定游戏账号成功',
+                      });
+                      await getBindPlayerInfo();
+                    } catch (e) {
+                      console.error(e);
+                      if (e instanceof MV4RequestError || e instanceof Error) {
+                        notifications.show({
+                          title: '绑定游戏账号失败',
+                          message: e.message,
+                          color: 'red',
+                        });
+                      }
+                    }
+                  },
+                );
+              } catch (e) {
+                console.error(e);
+                if (e instanceof MV4RequestError || e instanceof Error) {
+                  notifications.show({
+                    title: '绑定游戏账号失败',
+                    message: e.message,
+                    color: 'red',
+                  });
+                }
+              }
+            }}
+            mt="md"
+          >
+            绑定
+          </Button>
+        </Stack>
+      ),
+    });
+  }
 
   useEffect(() => {
     async function init() {
       try {
         await userModelActions.update();
+        await getBindPlayerInfo();
       } catch (e) {
         console.error(e);
       }
@@ -143,11 +267,24 @@ export default function UserPage() {
                 </Text>
                 <Text size={'sm'}>我们不会受理任何的解绑请求。</Text>
               </Alert>
-              <Text>***</Text>
-              <Group gap={'sm'}>
-                <Button>展示绑定信息</Button>
-                <Button>绑定新账户</Button>
-              </Group>
+              {showLoading && (
+                <Text size={'sm'} fs={'italic'}>
+                  正在加载。。。
+                </Text>
+              )}
+              {!showLoading && bindPlayerInfo.uid.length > 0 && (
+                <Text size={'sm'}>
+                  {bindPlayerInfo.name} (UID:{bindPlayerInfo.uid})
+                </Text>
+              )}
+              {!showLoading && bindPlayerInfo.uid.length === 0 && (
+                <Text fs={'italic'}>（未绑定）</Text>
+              )}
+              {!showLoading && bindPlayerInfo.uid.length === 0 && (
+                <Group gap={'sm'}>
+                  <Button onClick={onClickBindPlayer}>绑定新账户</Button>
+                </Group>
+              )}
             </Stack>
           </Stack>
         </Card>
@@ -166,7 +303,7 @@ export default function UserPage() {
               {userModelState.user.email.length > 0 ? (
                 <Text>邮箱：{userModelState.user.email}</Text>
               ) : (
-                <Text>未绑定邮箱</Text>
+                <Text fs={'italic'}>未绑定邮箱</Text>
               )}
               <Group gap={'sm'}>
                 <Button
@@ -185,6 +322,30 @@ export default function UserPage() {
                   }}
                 >
                   修改密码
+                </Button>
+              </Group>
+            </Stack>
+          </Stack>
+        </Card>
+        <Card
+          shadow="sm"
+          padding="lg"
+          radius="md"
+          withBorder
+          className={`${eleCss.appShellBg} ${
+            colorScheme === 'light' ? eleCss.appShellBgLight : ''
+          }`}
+        >
+          <Stack gap={'md'}>
+            <Title order={4}>其他</Title>
+            <Stack gap={'sm'}>
+              <Group gap={'sm'}>
+                <Button
+                  onClick={() => {
+                    navigate('/app/my-orders');
+                  }}
+                >
+                  历史订单
                 </Button>
               </Group>
             </Stack>

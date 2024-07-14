@@ -19,8 +19,8 @@ export default function ManagePage() {
           }`}
         >
           <Stack gap={'md'}>
-            <Title order={4}>您的服务状态</Title>
-            <Text>未拥有服务</Text>
+            <Title order={4}>TODO</Title>
+            <Text>TODO</Text>
           </Stack>
         </Card>
       </Stack>

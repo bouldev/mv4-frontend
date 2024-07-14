@@ -1,9 +1,9 @@
 import {
   Button,
   Card,
-  Checkbox,
   Divider,
   Group,
+  LoadingOverlay,
   Stack,
   Table,
   Text,
@@ -11,19 +11,54 @@ import {
   Title,
   useMantineColorScheme,
 } from '@mantine/core';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { modals } from '@mantine/modals';
+import { notifications } from '@mantine/notifications';
 import PageTitle from '@/ui/component/app/PageTitle';
 import eleCss from '@/ui/css/elements.module.css';
 import { MV4Order } from '@/api/order';
-import { getOrderStatusEmoji } from '@/utils/orderUtils';
+import { getOrderStatusEmoji, getOrderStatusString } from '@/utils/orderUtils';
+import { MV4RequestError } from '@/api/base';
+import { mv4RequestApi } from '@/api/mv4Client';
+import { formatTime } from '@/utils/timeUtils';
 
 export default function OrderPage() {
   const { colorScheme } = useMantineColorScheme();
-  const [filterAdminChecked, setFilterAdminChecked] = useState(false);
-  const [filterBalanceChecked, setFilterBalanceChecked] = useState(false);
+  const [orders, setOrders] = useState<MV4Order[]>([]);
+  const [showLoading, setShowLoading] = useState(true);
+  const [usernameInput, setUsernameInput] = useState<string>('');
 
-  const mock: MV4Order[] = [];
+  useEffect(() => {
+    filterOrders('');
+  }, []);
+
+  async function filterOrders(username: string) {
+    setShowLoading(true);
+    try {
+      const ret = await mv4RequestApi<
+        any,
+        {
+          orders: MV4Order[];
+        }
+      >({
+        path: '/admin/order/search-orders',
+        data: {
+          username,
+        },
+      });
+      setOrders(ret.data.orders);
+    } catch (e) {
+      console.error(e);
+      if (e instanceof MV4RequestError || e instanceof Error) {
+        notifications.show({
+          title: '获取订单列表失败，请刷新页面',
+          message: e.message,
+          color: 'red',
+        });
+      }
+    }
+    setShowLoading(false);
+  }
 
   return (
     <Stack>
@@ -38,8 +73,12 @@ export default function OrderPage() {
             colorScheme === 'light' ? eleCss.appShellBgLight : ''
           }`}
         >
+          <LoadingOverlay
+            visible={showLoading}
+            overlayProps={{ radius: 'sm', blur: 2 }}
+          />
           <Stack gap={'md'}>
-            <Title order={4}>订单列表</Title>
+            <Title order={4}>订单列表 (limit=30)</Title>
             <Table highlightOnHover withTableBorder>
               <Table.Thead>
                 <Table.Tr>
@@ -52,7 +91,7 @@ export default function OrderPage() {
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
-                {mock.map(item => (
+                {orders.map(item => (
                   <Table.Tr key={item.orderNo}>
                     <Table.Td>{item.orderNo}</Table.Td>
                     <Table.Td>{item.username}</Table.Td>
@@ -71,7 +110,45 @@ export default function OrderPage() {
                           onClick={() => {
                             modals.open({
                               title: <Text>Order {item.orderNo}</Text>,
-                              children: <Text>{item.desc}</Text>,
+                              children: (
+                                <Stack>
+                                  <Text size="sm">订单名：{item.name}</Text>
+                                  <Text size="sm">
+                                    订单状态：
+                                    {getOrderStatusString(item.orderStatus)}
+                                  </Text>
+                                  <Text size="sm">
+                                    订单备注：{item.desc ? item.desc : '（无）'}
+                                  </Text>
+                                  <Text size="sm">订单号：{item.orderNo}</Text>
+                                  <Text size="sm">
+                                    订单创建时间：
+                                    {formatTime(item.createTime, true)}
+                                  </Text>
+                                  <Text size="sm">
+                                    订单支付时间：
+                                    {item.payTime
+                                      ? formatTime(item.payTime, true)
+                                      : '（未支付）'}
+                                  </Text>
+                                  <Text size="sm">
+                                    创建者：{item.buyForUsername}
+                                  </Text>
+                                  <Text size="sm">
+                                    为谁购买：{item.buyForUsername}
+                                  </Text>
+                                  <Text size="sm">金额：{item.price}￥</Text>
+                                  <Text size="sm">
+                                    实际支付金额：{item.realPrice}￥
+                                  </Text>
+                                  <Text size="sm">
+                                    FBCoin抵扣：{item.usedFBCoins}
+                                  </Text>
+                                  <Text size="sm">
+                                    余额抵扣：{item.usedBalance}
+                                  </Text>
+                                </Stack>
+                              ),
                             });
                           }}
                         >
@@ -88,26 +165,17 @@ export default function OrderPage() {
             <Stack gap="xs">
               <Title order={5}>Filter</Title>
               <Group align="end">
-                <TextInput label="Username" />
-                <Group gap="xs">
-                  <Text>ADMIN</Text>
-                  <Checkbox
-                    checked={filterAdminChecked}
-                    onChange={event => {
-                      setFilterAdminChecked(event.currentTarget.checked);
-                    }}
-                  />
-                </Group>
-                <Group gap="xs">
-                  <Text>Balance != 0</Text>
-                  <Checkbox
-                    checked={filterBalanceChecked}
-                    onChange={event => {
-                      setFilterBalanceChecked(event.currentTarget.checked);
-                    }}
-                  />
-                </Group>
-                <Button size="sm">OK</Button>
+                <TextInput
+                  label="Username"
+                  value={usernameInput}
+                  onChange={e => setUsernameInput(e.currentTarget.value)}
+                />
+                <Button size="sm" onClick={() => setUsernameInput('')}>
+                  CLEAN
+                </Button>
+                <Button size="sm" onClick={() => filterOrders(usernameInput)}>
+                  OK
+                </Button>
               </Group>
             </Stack>
           </Stack>

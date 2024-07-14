@@ -23,11 +23,13 @@ export interface MV4Order {
   realPrice: number;
   usedBalance: number;
   usedFBCoins: number;
-  productId: string;
+  productId?: string;
   /** 支付网关 */
   gateway: string;
   createTime: number;
   payTime: number;
   orderStatus: MV4OrderStatusEnum;
+  name: string;
   desc: string;
+  payUrl: string;
 }

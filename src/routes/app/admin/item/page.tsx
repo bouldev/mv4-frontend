@@ -55,6 +55,7 @@ export default function ManagePage() {
       needPlanStr: '0',
       showForAnotherPlans: false,
       needPermissionStr: '0',
+      canPayDirectly: true,
       canUseBalance: false,
       canUseFBCoins: false,
       itemId: '',
@@ -210,7 +211,6 @@ export default function ManagePage() {
     let targetChangeProduct: MV4ProductFull;
     if (!isCreate) {
       targetChangeProduct = productList[index];
-      console.log(targetChangeProduct);
       subProductForm.setValues({
         targetChangeProductId: targetChangeProduct.productId,
         name: targetChangeProduct.name,
@@ -221,6 +221,7 @@ export default function ManagePage() {
         needPlanStr: String(targetChangeProduct.needPlan),
         showForAnotherPlans: targetChangeProduct.showForAnotherPlans,
         needPermissionStr: String(targetChangeProduct.needPermission),
+        canPayDirectly: targetChangeProduct.canPayDirectly,
         canUseBalance: targetChangeProduct.canUseBalance,
         canUseFBCoins: targetChangeProduct.canUseFBCoins,
         itemId: targetChangeProduct.itemId,
@@ -237,6 +238,7 @@ export default function ManagePage() {
         needPlanStr: '0',
         showForAnotherPlans: false,
         needPermissionStr: '0',
+        canPayDirectly: true,
         canUseBalance: false,
         canUseFBCoins: false,
         itemId: '',
@@ -244,6 +246,86 @@ export default function ManagePage() {
       });
     }
     productFormActions.open();
+  }
+
+  async function setProductCanBuy(id: string, canBuy: boolean) {
+    try {
+      await mv4RequestApi({
+        path: '/admin/product/set-product-can-buy',
+        data: {
+          productId: id,
+          canBuy,
+        },
+      });
+      await refreshProductList();
+    } catch (e) {
+      console.error(e);
+      if (e instanceof MV4RequestError || e instanceof Error) {
+        notifications.show({
+          title: '设置商品上架状态失败',
+          message: e.message,
+          color: 'red',
+        });
+      }
+    }
+  }
+
+  async function deleteProduct(product: MV4ProductFull) {
+    modals.openConfirmModal({
+      title: '确定删除这个商品吗？',
+      children: <Text size="sm">商品名称：{product.name}</Text>,
+      labels: { confirm: '确定', cancel: '取消' },
+      confirmProps: { color: 'red' },
+      onConfirm: async () => {
+        try {
+          await mv4RequestApi({
+            path: '/admin/product/delete-product',
+            data: {
+              productId: product.productId,
+            },
+          });
+          await refreshProductList();
+        } catch (e) {
+          console.error(e);
+          if (e instanceof MV4RequestError || e instanceof Error) {
+            notifications.show({
+              title: '删除商品失败',
+              message: e.message,
+              color: 'red',
+            });
+          }
+        }
+      },
+    });
+  }
+
+  async function deleteCategory(category: MV4ProductCategoryFull) {
+    modals.openConfirmModal({
+      title: '确定删除这个分区吗？',
+      children: <Text size="sm">分区名称：{category.name}</Text>,
+      labels: { confirm: '确定', cancel: '取消' },
+      confirmProps: { color: 'red' },
+      onConfirm: async () => {
+        try {
+          await mv4RequestApi({
+            path: '/admin/product/delete-category',
+            data: {
+              categoryId: category.categoryId,
+            },
+          });
+          await refreshCategoryList();
+        } catch (e) {
+          console.error(e);
+          if (e instanceof MV4RequestError || e instanceof Error) {
+            notifications.show({
+              title: '删除分区失败',
+              message: e.message,
+              color: 'red',
+            });
+          }
+        }
+      },
+    });
   }
 
   return (
@@ -257,7 +339,6 @@ export default function ManagePage() {
       >
         <form
           onSubmit={subCategoryForm.onSubmit(async values => {
-            console.log(values);
             try {
               await mv4RequestApi<any, any>({
                 path: `/admin/product${
@@ -361,7 +442,6 @@ export default function ManagePage() {
       >
         <form
           onSubmit={subProductForm.onSubmit(async values => {
-            console.log(values);
             try {
               await mv4RequestApi<any, any>({
                 path: `/admin/product${
@@ -379,6 +459,7 @@ export default function ManagePage() {
                   needPlan: Number(values.needPlanStr),
                   showForAnotherPlans: values.showForAnotherPlans,
                   needPermission: Number(values.needPermissionStr),
+                  canPayDirectly: values.canPayDirectly,
                   canUseBalance: values.canUseBalance,
                   canUseFBCoins: values.canUseFBCoins,
                   itemId: values.itemId,
@@ -442,7 +523,7 @@ export default function ManagePage() {
                 maxDropdownHeight={200}
               />
               <NumberInput
-                label="物品数量"
+                label="物品数量（计划、卡槽为秒数，其余为数量）"
                 allowNegative={false}
                 decimalScale={0}
                 key={subProductForm.key('itemAmount')}
@@ -515,6 +596,12 @@ export default function ManagePage() {
               checked={subProductForm.getValues().showForAnotherPlans}
               {...subProductForm.getInputProps('showForAnotherPlans')}
               label="显示给未达到该计划用户"
+            />
+            <Checkbox
+              key={subProductForm.key('canPayDirectly')}
+              checked={subProductForm.getValues().canPayDirectly}
+              {...subProductForm.getInputProps('canPayDirectly')}
+              label="可直接通过支付购买"
             />
             <Checkbox
               key={subProductForm.key('canUseFBCoins')}
@@ -605,7 +692,11 @@ export default function ManagePage() {
                           >
                             编辑
                           </Button>
-                          <Button size="xs" bg="red">
+                          <Button
+                            size="xs"
+                            bg="red"
+                            onClick={() => deleteCategory(item)}
+                          >
                             删除
                           </Button>
                         </Group>
@@ -707,6 +798,10 @@ export default function ManagePage() {
                                       {permissionToString(item.needPermission)}
                                     </Text>
                                     <Text>
+                                      允许直接支付购买：
+                                      {item.canPayDirectly ? '是' : '否'}
+                                    </Text>
+                                    <Text>
                                       可使用FBCoin：
                                       {item.canUseFBCoins ? '是' : '否'}
                                     </Text>
@@ -723,9 +818,9 @@ export default function ManagePage() {
                           </Button>
                           <Button
                             size="xs"
-                            bg={item.canBuy ? 'indigo' : 'orange'}
+                            bg={item.canBuy ? 'pink' : 'orange'}
                             onClick={() =>
-                              onClickCreateOrChangeProduct(false, i)
+                              setProductCanBuy(item.productId, !item.canBuy)
                             }
                           >
                             {item.canBuy ? '下架' : '上架'}
@@ -738,7 +833,11 @@ export default function ManagePage() {
                           >
                             编辑
                           </Button>
-                          <Button size="xs" bg="red">
+                          <Button
+                            size="xs"
+                            bg="red"
+                            onClick={() => deleteProduct(item)}
+                          >
                             删除
                           </Button>
                         </Group>

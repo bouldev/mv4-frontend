@@ -22,6 +22,7 @@ export interface MV4ProductFull {
   needPlan: MV4UserProductType;
   showForAnotherPlans: boolean;
   needPermission: MV4UserPermissionLevel;
+  canPayDirectly: boolean;
   canUseBalance: boolean;
   canUseFBCoins: boolean;
   itemId: string;
