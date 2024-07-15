@@ -75,8 +75,7 @@ export default function ManagePage() {
         },
       });
       notifications.show({
-        message: '订单未支付',
-        color: 'red',
+        message: '已催处理，可刷新页面查看状态',
       });
     } catch (e) {
       if (e instanceof MV4RequestError) {

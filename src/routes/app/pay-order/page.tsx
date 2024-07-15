@@ -74,8 +74,7 @@ export default function ManagePage() {
         },
       });
       notifications.show({
-        message: '订单未支付',
-        color: 'red',
+        message: '已经催处理，稍后将刷新状态',
       });
     } catch (e) {
       if (e instanceof MV4RequestError) {
@@ -115,12 +114,13 @@ export default function ManagePage() {
         setShowLoading(false);
         setTimeout(() => {
           setShowConfirmByUserBtn(true);
-        }, 10000);
+        }, 5000);
         return;
       }
       showModal('链接无效');
     }
     init();
+    requestOrder(params.get('orderNo') as string);
     const interval = setInterval(async () => {
       try {
         await requestOrder(params.get('orderNo') as string);
@@ -130,7 +130,7 @@ export default function ManagePage() {
           showModal(e.message);
         }
       }
-    }, 3000);
+    }, 2000);
     return () => clearInterval(interval);
   }, []);
 
@@ -180,7 +180,7 @@ export default function ManagePage() {
                   </Card>
                 </Group>
                 <Title order={5} c={'red'}>
-                  请扫码或点击下方按钮支付
+                  请使用支付宝扫码或点击下方按钮支付
                 </Title>
                 <Title order={3} c={'red'}>
                   ￥ {order.realPrice.toFixed(2)}
