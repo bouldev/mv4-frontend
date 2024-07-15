@@ -48,7 +48,7 @@ export default function Layout() {
     themeActions.loadTheme();
     async function init() {
       try {
-        await userModelActions.init();
+        const ret = await userModelActions.init();
         if (window.location.pathname === '/') {
           navigate('/app');
           return;
@@ -65,7 +65,7 @@ export default function Layout() {
           }
           return;
         }
-        if (userModelState.user.email.length === 0) {
+        if (ret.user.email.length === 0) {
           modals.openConfirmModal({
             title: '安全警告',
             children: (
