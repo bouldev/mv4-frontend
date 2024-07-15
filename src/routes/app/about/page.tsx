@@ -38,6 +38,22 @@ export default function AboutPage() {
               </Anchor>
             </Text>
             <Text>
+              <Anchor
+                target={'_blank'}
+                rel={'noreferrer'}
+                href="https://fastbuilder.pro/enduser-license.html"
+              >
+                用户协议
+              </Anchor>{' '}
+              <Anchor
+                target={'_blank'}
+                rel={'noreferrer'}
+                href="https://fastbuilder.pro/privacy-policy.html"
+              >
+                隐私策略
+              </Anchor>
+            </Text>
+            <Text>
               Frontend:{' '}
               <Anchor
                 target={'_blank'}

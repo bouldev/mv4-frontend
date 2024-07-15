@@ -175,6 +175,8 @@ export default function RegisterForm({
                 <Text size="xs">
                   我已阅读并同意遵守
                   <Anchor
+                    target={'_blank'}
+                    rel={'noreferrer'}
                     size="xs"
                     href="https://fastbuilder.pro/enduser-license.html"
                   >
@@ -182,6 +184,8 @@ export default function RegisterForm({
                   </Anchor>
                   ，并且认可
                   <Anchor
+                    target={'_blank'}
+                    rel={'noreferrer'}
                     size="xs"
                     href="https://fastbuilder.pro/privacy-policy.html"
                   >
