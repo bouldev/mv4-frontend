@@ -20,6 +20,8 @@ import {
 } from '@/utils/timeUtils';
 import { mv4RequestApi } from '@/api/mv4Client';
 import { MV4RequestError } from '@/api/base';
+import { nemcQueryPlayer } from '@/api/nemcQueryPlayer';
+import { ModalConfirmPlayerWithAvatar } from '@/ui/component/ModalConfirmPlayerWithAvatar';
 
 export default function SlotManageCard() {
   const { colorScheme } = useMantineColorScheme();
@@ -100,7 +102,7 @@ export default function SlotManageCard() {
           )}
           <Button
             fullWidth
-            onClick={() => {
+            onClick={async () => {
               if (currentInitInput.current.length === 0) {
                 notifications.show({
                   message: '请输入内容',
@@ -109,52 +111,73 @@ export default function SlotManageCard() {
                 });
                 return;
               }
-              modals.closeAll();
-              modals.openConfirmModal({
-                title: '再次确认',
-                closeOnEscape: false,
-                closeOnClickOutside: false,
-                children: (
-                  <Stack>
-                    <Text size="sm">
-                      确定使用
-                      {thisSlot.dataType ===
-                        ServerSlotDataType.PLAYER_ID_SLOT && '游戏昵称'}
-                      {thisSlot.dataType ===
-                        ServerSlotDataType.SERVER_ID_SLOT && '租赁服号'}
-                      “{currentInitInput.current}”初始化这个SLOT吗？
-                    </Text>
-                    <Text size="sm">
-                      请认真检查，我们不会因为填写错误导致无法使用而补偿。
-                    </Text>
-                  </Stack>
-                ),
-                labels: { confirm: '确定', cancel: '取消' },
-                onConfirm: async () => {
-                  try {
-                    await mv4RequestApi({
-                      path: '/server-slot/init-slot',
-                      data: {
-                        slotId: thisSlot.slotId,
-                        data: currentInitInput.current,
-                      },
-                    });
+              async function onClickConfirm() {
+                try {
+                  await mv4RequestApi({
+                    path: '/server-slot/init-slot',
+                    data: {
+                      slotId: thisSlot.slotId,
+                      data: currentInitInput.current,
+                    },
+                  });
+                  notifications.show({
+                    message: '初始化成功',
+                  });
+                  await updateSlotList();
+                } catch (e) {
+                  console.error(e);
+                  if (e instanceof MV4RequestError || e instanceof Error) {
                     notifications.show({
-                      message: '初始化成功',
+                      title: '初始化卡槽失败',
+                      message: e.message,
+                      color: 'red',
                     });
-                    await updateSlotList();
-                  } catch (e) {
-                    console.error(e);
-                    if (e instanceof MV4RequestError || e instanceof Error) {
-                      notifications.show({
-                        title: '初始化卡槽失败',
-                        message: e.message,
-                        color: 'red',
-                      });
-                    }
                   }
-                },
-              });
+                }
+              }
+              /***********/
+              modals.closeAll();
+              if (thisSlot.dataType === ServerSlotDataType.SERVER_ID_SLOT) {
+                modals.openConfirmModal({
+                  title: '再次确认',
+                  closeOnEscape: false,
+                  closeOnClickOutside: false,
+                  children: (
+                    <Stack>
+                      <Text size="sm">
+                        确定使用租赁服号“{currentInitInput.current}
+                        ”初始化该SLOT吗？
+                      </Text>
+                      <Text size="sm">
+                        请认真检查，我们不会因为填写错误导致无法使用而补偿。
+                      </Text>
+                    </Stack>
+                  ),
+                  labels: { confirm: '确定', cancel: '取消' },
+                  onConfirm: onClickConfirm,
+                });
+              } else {
+                try {
+                  const playerInfo = await nemcQueryPlayer(
+                    currentInitInput.current,
+                  );
+                  ModalConfirmPlayerWithAvatar(
+                    '请确认',
+                    '确定使用这个玩家初始化该SLOT吗？\n请认真检查，我们不会因为填写错误导致无法使用而补偿。',
+                    playerInfo,
+                    onClickConfirm,
+                  );
+                } catch (e) {
+                  console.error(e);
+                  if (e instanceof MV4RequestError || e instanceof Error) {
+                    notifications.show({
+                      title: '查找玩家失败',
+                      message: e.message,
+                      color: 'red',
+                    });
+                  }
+                }
+              }
             }}
             mt="md"
           >

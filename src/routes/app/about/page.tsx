@@ -28,6 +28,16 @@ export default function AboutPage() {
           <Title order={4}>FastBuilder UserCenter Next (mv4)</Title>
           <Stack gap={'xs'}>
             <Text>
+              交流群：
+              <Anchor
+                target={'_blank'}
+                rel={'noreferrer'}
+                href={'https://qm.qq.com/q/5Ptk9wjsKk'}
+              >
+                859708791
+              </Anchor>
+            </Text>
+            <Text>
               Frontend:{' '}
               <Anchor
                 target={'_blank'}

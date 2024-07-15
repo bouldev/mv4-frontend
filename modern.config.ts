@@ -35,7 +35,7 @@ export default defineConfig({
     },
     devServer: {
       proxy: {
-        '/api': 'http://localhost:7001',
+        '/api': 'http://localhost:7159',
       },
     },
   },
