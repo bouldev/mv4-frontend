@@ -14,13 +14,16 @@ import eleCss from '@/ui/css/elements.module.css';
 export default function DownloadPage() {
   const { colorScheme } = useMantineColorScheme();
 
-  const code = `git clone git@github.com:bouldev/PhoenixBuilder.git
+  const buildShellCode = `git clone git@github.com:bouldev/PhoenixBuilder.git
 cd PhoenixBuilder
 make current
 # 初次使用在执行完一次 make 后执行下面的命令：
 sed "s/urrentProtocol byte = 11/urrentProtocol byte = 8/g" ~/go/pkg/mod/github.com/sandertv/go-raknet@v1.12.0/conn.go
 make current
 ./build/phoenixbuilder`;
+
+  const downloadShellCode =
+    'export PB_USE_GH_REPO=1 && export GH_DOMAIN="https://github.com/" && bash -c "$(curl -fsSL raw.githubusercontent.com/bouldev/PhoenixBuilder/main/install.sh)"';
 
   return (
     <Stack>
@@ -35,10 +38,31 @@ make current
         }`}
       >
         <Stack gap={'md'}>
+          <Title order={4}>使用安装脚本</Title>
+          <Text size="sm">
+            您可以使用我们的安装脚本来安装 PhoenixBuilder 。
+          </Text>
+          <Stack gap={'xs'}>
+            <ScrollArea>
+              <CodeHighlight code={downloadShellCode} lang={'sh'} />
+            </ScrollArea>
+          </Stack>
+        </Stack>
+      </Card>
+      <Card
+        shadow="sm"
+        padding="lg"
+        radius="md"
+        withBorder
+        className={`${eleCss.appShellBg} ${
+          colorScheme === 'light' ? eleCss.appShellBgLight : ''
+        }`}
+      >
+        <Stack gap={'md'}>
           <Title order={4}>从源码构建</Title>
           <Stack gap={'xs'}>
             <ScrollArea>
-              <CodeHighlight code={code} lang={'sh'} />
+              <CodeHighlight code={buildShellCode} lang={'sh'} />
             </ScrollArea>
           </Stack>
         </Stack>

@@ -260,6 +260,17 @@ export default function UserPage() {
         >
           <Stack gap={'md'}>
             <Title order={4}>您绑定的游戏账号</Title>
+            <Text size={'sm'}>
+              绑定游戏账号后，您将能在
+              <Text span fw={700}>
+                订阅有效
+              </Text>
+              的情况下无限制地使辅助用户进入
+              <Text span fw={700}>
+                该游戏账号名下的
+              </Text>
+              租赁服。
+            </Text>
             <Stack gap={'sm'}>
               <Alert color="orange" title="注意">
                 <Text size={'sm'}>
@@ -299,6 +310,7 @@ export default function UserPage() {
         >
           <Stack gap={'md'}>
             <Title order={4}>安全设置</Title>
+            <Text size={'sm'}>邮箱是您在发生意外时找回账号的唯一手段。</Text>
             <Stack gap={'sm'}>
               {userModelState.user.email.length > 0 ? (
                 <Text>邮箱：{userModelState.user.email}</Text>
@@ -346,6 +358,64 @@ export default function UserPage() {
                   }}
                 >
                   历史订单
+                </Button>
+              </Group>
+            </Stack>
+          </Stack>
+        </Card>
+        <Card
+          shadow="sm"
+          padding="lg"
+          radius="md"
+          withBorder
+          className={`${eleCss.appShellBg} ${
+            colorScheme === 'light' ? eleCss.appShellBgLight : ''
+          }`}
+        >
+          <Stack gap={'md'}>
+            <Title order={4}>危险区域</Title>
+            <Stack gap={'sm'}>
+              <Group gap={'sm'}>
+                <Button
+                  bg={'red'}
+                  onClick={async () => {
+                    modals.openConfirmModal({
+                      title: '确定丢弃辅助用户吗？',
+                      children: (
+                        <Box>
+                          <Text size="sm">
+                            一旦丢弃辅助用户，它就会永远消失！
+                          </Text>
+                        </Box>
+                      ),
+                      labels: { confirm: '确定丢弃', cancel: '取消' },
+                      confirmProps: { color: 'red' },
+                      onConfirm: async () => {
+                        try {
+                          await mv4RequestApi({
+                            path: '/helper-bot/drop',
+                            methodGet: true,
+                          });
+                          notifications.show({
+                            message: '操作成功',
+                          });
+                        } catch (e) {
+                          console.error(e);
+                          if (
+                            e instanceof MV4RequestError ||
+                            e instanceof Error
+                          ) {
+                            notifications.show({
+                              title: '丢弃辅助用户失败',
+                              message: e.message,
+                            });
+                          }
+                        }
+                      },
+                    });
+                  }}
+                >
+                  丢弃辅助用户
                 </Button>
               </Group>
             </Stack>

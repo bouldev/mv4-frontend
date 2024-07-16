@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   Card,
   Group,
@@ -55,7 +54,7 @@ export default function ManagePage() {
     setShowLoading(false);
   }
 
-  function showModal(reason: string) {
+  /* function showModal(reason: string) {
     modals.open({
       title: '提示',
       children: (
@@ -64,7 +63,7 @@ export default function ManagePage() {
         </Box>
       ),
     });
-  }
+  } */
 
   async function onClickConfirmByUser(orderNo: string) {
     try {
@@ -75,16 +74,38 @@ export default function ManagePage() {
         },
       });
       notifications.show({
-        message: '已催处理，可刷新页面查看状态',
+        message: '订单已催处理',
       });
+      modals.closeAll();
+      await getOrders();
     } catch (e) {
-      if (e instanceof MV4RequestError) {
-        showModal(e.message);
-        return;
-      }
-      if (e instanceof Error) {
+      if (e instanceof Error || e instanceof MV4RequestError) {
         notifications.show({
           title: '订单查询失败',
+          message: e.message,
+          color: 'red',
+        });
+      }
+    }
+  }
+
+  async function onClickCancelOrder(orderNo: string) {
+    try {
+      await mv4RequestApi({
+        path: '/shop/cancel-order',
+        data: {
+          orderNo,
+        },
+      });
+      notifications.show({
+        message: '订单取消成功',
+      });
+      modals.closeAll();
+      await getOrders();
+    } catch (e) {
+      if (e instanceof Error || e instanceof MV4RequestError) {
+        notifications.show({
+          title: '订单取消失败',
           message: e.message,
           color: 'red',
         });
@@ -137,81 +158,92 @@ export default function ManagePage() {
                         {getOrderStatusEmoji(item.orderStatus)}
                       </Table.Td>
                       <Table.Td>
-                        <Group>
-                          <Button
-                            size="xs"
-                            onClick={() => {
-                              modals.open({
-                                title: <Text>Order {item.orderNo}</Text>,
-                                children: (
-                                  <Stack>
-                                    <Text size="sm">订单名：{item.name}</Text>
-                                    <Text size="sm">
-                                      订单状态：
-                                      {getOrderStatusString(item.orderStatus)}
-                                    </Text>
-                                    <Text size="sm">
-                                      订单备注：
-                                      {item.desc ? item.desc : '（无）'}
-                                    </Text>
-                                    <Text size="sm">
-                                      订单号：{item.orderNo}
-                                    </Text>
-                                    <Text size="sm">
-                                      订单创建时间：
-                                      {formatTime(item.createTime, true)}
-                                    </Text>
-                                    <Text size="sm">
-                                      订单支付时间：
-                                      {item.payTime
-                                        ? formatTime(item.payTime, true)
-                                        : '（未支付）'}
-                                    </Text>
-                                    <Text size="sm">
-                                      为谁购买：{item.buyForUsername}
-                                    </Text>
-                                    <Text size="sm">金额：{item.price}￥</Text>
-                                    <Text size="sm">
-                                      实际支付金额：{item.realPrice}￥
-                                    </Text>
-                                    <Text size="sm">
-                                      FBCoin抵扣：{item.usedFBCoins}
-                                    </Text>
-                                    <Text size="sm">
-                                      余额抵扣：{item.usedBalance}
-                                    </Text>
-                                  </Stack>
-                                ),
-                              });
-                            }}
-                          >
-                            查看详情
-                          </Button>
-                          {item.createTime + 300 > nowUnix() && (
-                            <Button
-                              size="xs"
-                              bg={'teal'}
-                              onClick={() => {
-                                window.location.href = `/app/pay-order?orderNo=${item.orderNo}`;
-                              }}
-                            >
-                              继续支付
-                            </Button>
-                          )}
-                          {item.createTime + 10800 > nowUnix() &&
-                            item.orderStatus ===
-                              MV4OrderStatusEnum.WAITING_TO_PAY && (
-                              <Button
-                                size="xs"
-                                bg={'violet'}
-                                onClick={() =>
-                                  onClickConfirmByUser(item.orderNo)
-                                }
-                              >
-                                催发货
-                              </Button>
-                            )}
-                        </Group>
+                        <Button
+                          size="xs"
+                          onClick={() => {
+                            modals.open({
+                              title: <Text>Order {item.orderNo}</Text>,
+                              children: (
+                                <Stack gap="xs">
+                                  <Text size="sm">订单名：{item.name}</Text>
+                                  <Text size="sm">
+                                    订单状态：
+                                    {getOrderStatusString(item.orderStatus)}
+                                  </Text>
+                                  <Text size="sm">
+                                    订单备注：
+                                    {item.desc ? item.desc : '（无）'}
+                                  </Text>
+                                  <Text size="sm">订单号：{item.orderNo}</Text>
+                                  <Text size="sm">
+                                    订单创建时间：
+                                    {formatTime(item.createTime, true)}
+                                  </Text>
+                                  <Text size="sm">
+                                    订单支付时间：
+                                    {item.payTime
+                                      ? formatTime(item.payTime, true)
+                                      : '（未支付）'}
+                                  </Text>
+                                  <Text size="sm">
+                                    为谁购买：{item.buyForUsername}
+                                  </Text>
+                                  <Text size="sm">金额：{item.price}￥</Text>
+                                  <Text size="sm">
+                                    实际支付金额：{item.realPrice}￥
+                                  </Text>
+                                  <Text size="sm">
+                                    FBCoin抵扣：{item.usedFBCoins}
+                                  </Text>
+                                  <Text size="sm">
+                                    余额抵扣：{item.usedBalance}
+                                  </Text>
+                                  <Group>
+                                    {item.createTime + 300 > nowUnix() && (
+                                      <Button
+                                        size="xs"
+                                        bg={'teal'}
+                                        onClick={() => {
+                                          window.location.href = `/app/pay-order?orderNo=${item.orderNo}`;
+                                        }}
+                                      >
+                                        继续支付
+                                      </Button>
+                                    )}
+                                    {item.createTime + 10800 > nowUnix() &&
+                                      item.orderStatus ===
+                                        MV4OrderStatusEnum.WAITING_TO_PAY && (
+                                        <Button
+                                          size="xs"
+                                          bg={'violet'}
+                                          onClick={() =>
+                                            onClickConfirmByUser(item.orderNo)
+                                          }
+                                        >
+                                          催发货
+                                        </Button>
+                                      )}
+                                    {item.createTime + 10800 > nowUnix() &&
+                                      item.orderStatus ===
+                                        MV4OrderStatusEnum.WAITING_TO_PAY && (
+                                        <Button
+                                          size="xs"
+                                          bg={'red'}
+                                          onClick={() =>
+                                            onClickCancelOrder(item.orderNo)
+                                          }
+                                        >
+                                          取消订单
+                                        </Button>
+                                      )}
+                                  </Group>
+                                </Stack>
+                              ),
+                            });
+                          }}
+                        >
+                          查看详情
+                        </Button>
                       </Table.Td>
                     </Table.Tr>
                   ))}

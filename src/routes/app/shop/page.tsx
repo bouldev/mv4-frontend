@@ -73,7 +73,13 @@ export default function ShopPage() {
       children: (
         <Stack>
           <Text size="sm">价格：￥ {product.price}</Text>
-          <Text size="sm">介绍：{product.desc}</Text>
+          <Text size="sm">介绍：</Text>
+          <Text
+            size="sm"
+            dangerouslySetInnerHTML={{
+              __html: product.desc.replaceAll('\n', '<br/>'),
+            }}
+          />
           <Space h={20} />
           {(!product.canUseBalance || !product.canUseFBCoins) && (
             <Text size="xs" c="dimmed">

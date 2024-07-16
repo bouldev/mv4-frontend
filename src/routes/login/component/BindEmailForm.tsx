@@ -140,7 +140,8 @@ export default function BindEmailForm() {
             {...form.getInputProps('email')}
           />
           <PasswordInput
-            label="输入您账号的密码以确认"
+            label="输入密码以确认"
+            placeholder="用户中心账号的密码"
             disabled={showLoading}
             leftSection={<Key />}
             key={form.key('password')}

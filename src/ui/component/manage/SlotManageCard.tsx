@@ -354,10 +354,18 @@ export default function SlotManageCard() {
       }`}
     >
       <Stack gap={'md'}>
-        <Title order={4}>您的槽位</Title>
+        <Title order={4}>您的 SLOT（槽位）</Title>
+        <Text size={'sm'}>
+          除您绑定的游戏账号外，您只能使辅助用户进入以下租赁服/游戏账号名下的租赁服。
+        </Text>
         {cardLoading && (
           <Text size={'sm'} fs={'italic'}>
             请稍等，正在加载。。。
+          </Text>
+        )}
+        {!cardLoading && slots.length === 0 && (
+          <Text size={'sm'} fs={'italic'}>
+            （没有SLOT）
           </Text>
         )}
         {!cardLoading &&

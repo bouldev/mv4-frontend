@@ -1,5 +1,6 @@
 import {
   Alert,
+  Box,
   Button,
   Card,
   Group,
@@ -27,11 +28,17 @@ export default function HelperBotCard() {
     helperBotStatus: HelperBotStatus;
     nickname: string;
     dailySigned: boolean;
+    level: number;
+    exp: number;
+    need_exp: number;
   }>({
     loaded: false,
     helperBotStatus: HelperBotStatus.NEED_INIT,
     nickname: '',
     dailySigned: false,
+    level: 0,
+    exp: 0,
+    need_exp: 0,
   });
   const [isPageInit, setIsPageInit] = useState(false);
   const [hasErr, setHasErr] = useState(false);
@@ -47,6 +54,9 @@ export default function HelperBotCard() {
       helperBotStatus: HelperBotStatus.NEED_INIT,
       nickname: '',
       dailySigned: false,
+      level: 0,
+      exp: 0,
+      need_exp: 0,
     });
     setHasErr(false);
     try {
@@ -59,6 +69,9 @@ export default function HelperBotCard() {
           status: HelperBotStatus;
           nickname: string;
           dailySigned: boolean;
+          level: number;
+          exp: number;
+          need_exp: number;
         }
       >({
         path: '/helper-bot/info',
@@ -74,6 +87,9 @@ export default function HelperBotCard() {
         helperBotStatus: ret.data.status,
         nickname: ret.data.nickname,
         dailySigned: ret.data.dailySigned,
+        level: ret.data.level,
+        exp: ret.data.exp,
+        need_exp: ret.data.need_exp,
       });
     } catch (e) {
       console.error(e);
@@ -135,6 +151,9 @@ export default function HelperBotCard() {
         helperBotStatus: ret.data.status,
         nickname: ret.data.nickname,
         dailySigned: ret.data.dailySigned,
+        level: helperBotState.level,
+        exp: helperBotState.exp,
+        need_exp: helperBotState.need_exp,
       });
     } catch (e) {
       console.error(e);
@@ -216,6 +235,9 @@ export default function HelperBotCard() {
         helperBotStatus: ret.data.status,
         nickname: ret.data.nickname,
         dailySigned: ret.data.dailySigned,
+        level: helperBotState.level,
+        exp: helperBotState.exp,
+        need_exp: helperBotState.need_exp,
       });
       gameAccount.current = '';
       gamePassword.current = '';
@@ -278,6 +300,9 @@ export default function HelperBotCard() {
         helperBotStatus: ret.data.status,
         nickname: ret.data.nickname,
         dailySigned: ret.data.dailySigned,
+        level: helperBotState.level,
+        exp: helperBotState.exp,
+        need_exp: helperBotState.need_exp,
       });
       notifications.show({
         message: '操作成功',
@@ -292,42 +317,55 @@ export default function HelperBotCard() {
     }
   }
 
-  async function dropHelperBot() {
-    try {
-      await mv4RequestApi({
-        path: '/helper-bot/drop',
-        methodGet: true,
-      });
-      notifications.show({
-        message: '操作成功',
-      });
-      await refreshHelperBotStatus();
-    } catch (e) {
-      console.error(e);
-      if (e instanceof MV4RequestError || e instanceof Error) {
-        setHasErr(true);
-        setErrReason(e.message);
-      }
-    }
-  }
-
   async function helperBotDailySign() {
-    try {
-      await mv4RequestApi({
-        path: '/helper-bot/daily-sign',
-        methodGet: true,
-      });
-      notifications.show({
-        message: '操作成功',
-      });
-      await refreshHelperBotStatus();
-    } catch (e) {
-      console.error(e);
-      if (e instanceof MV4RequestError || e instanceof Error) {
-        setHasErr(true);
-        setErrReason(e.message);
-      }
-    }
+    modals.openConfirmModal({
+      title: '辅助用户签到',
+      children: (
+        <Box>
+          <Text size="sm">
+            签到可提升辅助用户的游戏等级，使其能进入更高等级的租赁服。
+          </Text>
+          <Text size="sm">辅助用户每日首次进入租赁服时，将自动进行签到。</Text>
+        </Box>
+      ),
+      labels: { confirm: '确定签到', cancel: '取消' },
+      onConfirm: async () => {
+        try {
+          const ret = await mv4RequestApi<
+            any,
+            {
+              status: HelperBotStatus;
+              nickname: string;
+              dailySigned: boolean;
+              level: number;
+              exp: number;
+              need_exp: number;
+            }
+          >({
+            path: '/helper-bot/daily-sign',
+            methodGet: true,
+          });
+          notifications.show({
+            message: '操作成功',
+          });
+          setHelperBotState({
+            loaded: true,
+            helperBotStatus: ret.data.status,
+            nickname: ret.data.nickname,
+            dailySigned: ret.data.dailySigned,
+            level: ret.data.level,
+            exp: ret.data.exp,
+            need_exp: ret.data.need_exp,
+          });
+        } catch (e) {
+          console.error(e);
+          if (e instanceof MV4RequestError || e instanceof Error) {
+            setHasErr(true);
+            setErrReason(e.message);
+          }
+        }
+      },
+    });
   }
 
   useEffect(() => {
@@ -352,6 +390,19 @@ export default function HelperBotCard() {
     >
       <Stack gap={'md'}>
         <Title order={4}>您的辅助用户</Title>
+        <Box>
+          <Text size={'sm'}>
+            辅助用户是用于进入您的租赁服完成操作的
+            <Text span fw={700}>
+              机器人用户
+            </Text>
+            。
+          </Text>
+          <Text size={'sm'}>
+            辅助用户的创建是 PhoenixBuilder
+            正常工作的必要条件，请确保您已设置完毕。
+          </Text>
+        </Box>
         <Alert color="red" title="出现错误" icon={<Caution />} hidden={!hasErr}>
           <Text size={'sm'} fw={700}>
             {errReason}
@@ -409,7 +460,13 @@ export default function HelperBotCard() {
                   昵称：
                   {helperBotState.nickname
                     ? helperBotState.nickname
-                    : '（未设置昵称）'}
+                    : '（未设置昵称）'}{' '}
+                  <Text span>
+                    Lv.
+                    {helperBotState.level > 0
+                      ? `${helperBotState.level} (${helperBotState.exp}/${helperBotState.need_exp})`
+                      : '-'}
+                  </Text>
                 </Text>
                 <Group gap={'sm'} pt={'sm'}>
                   <Button onClick={refreshHelperBotStatus}>刷新状态</Button>
@@ -429,9 +486,6 @@ export default function HelperBotCard() {
                       )}
                     </>
                   )}
-                  <Button bg={'red'} onClick={dropHelperBot}>
-                    丢弃辅助用户
-                  </Button>
                 </Group>
               </>
             )}
