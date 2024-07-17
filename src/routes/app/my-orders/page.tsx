@@ -199,17 +199,18 @@ export default function ManagePage() {
                                     余额抵扣：{item.usedBalance}
                                   </Text>
                                   <Group>
-                                    {item.createTime + 300 > nowUnix() && (
-                                      <Button
-                                        size="xs"
-                                        bg={'teal'}
-                                        onClick={() => {
-                                          window.location.href = `/app/pay-order?orderNo=${item.orderNo}`;
-                                        }}
-                                      >
-                                        继续支付
-                                      </Button>
-                                    )}
+                                    {item.createTime + 300 > nowUnix() &&
+                                      !item.payTime && (
+                                        <Button
+                                          size="xs"
+                                          bg={'teal'}
+                                          onClick={() => {
+                                            window.location.href = `/app/pay-order?orderNo=${item.orderNo}`;
+                                          }}
+                                        >
+                                          继续支付
+                                        </Button>
+                                      )}
                                     {item.createTime + 10800 > nowUnix() &&
                                       item.orderStatus ===
                                         MV4OrderStatusEnum.WAITING_TO_PAY && (

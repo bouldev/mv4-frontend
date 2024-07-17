@@ -7,6 +7,7 @@ export interface MV4Product {
   categoryId: string;
   price: number;
   discount: number;
+  canPayDirectly: boolean;
   canUseBalance: boolean;
   canUseFBCoins: boolean;
 }

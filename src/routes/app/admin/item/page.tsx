@@ -778,7 +778,16 @@ export default function ManagePage() {
                                     <Text>
                                       分区：{getProductCategoryName(item)}
                                     </Text>
-                                    <Text>介绍：{item.desc}</Text>
+                                    <Text size="sm">介绍：</Text>
+                                    <Text
+                                      size="sm"
+                                      dangerouslySetInnerHTML={{
+                                        __html: item.desc.replaceAll(
+                                          '\n',
+                                          '<br/>',
+                                        ),
+                                      }}
+                                    />
                                     <Divider my="xs" />
                                     <Title order={5}>实际提供商品</Title>
                                     <Text>提供的物品：{item.itemId}</Text>

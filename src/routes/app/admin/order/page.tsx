@@ -131,9 +131,7 @@ export default function OrderPage() {
                                       ? formatTime(item.payTime, true)
                                       : '（未支付）'}
                                   </Text>
-                                  <Text size="sm">
-                                    创建者：{item.buyForUsername}
-                                  </Text>
+                                  <Text size="sm">创建者：{item.username}</Text>
                                   <Text size="sm">
                                     为谁购买：{item.buyForUsername}
                                   </Text>

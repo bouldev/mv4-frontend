@@ -41,6 +41,7 @@ export default function UserPage() {
   });
   const currentPlayerNameInput = useRef('');
   const navigate = useNavigate();
+  const currentRedeemCode = useRef('');
 
   async function getBindPlayerInfo() {
     setShowLoading(true);
@@ -358,6 +359,59 @@ export default function UserPage() {
                   }}
                 >
                   历史订单
+                </Button>
+                <Button
+                  onClick={() => {
+                    modals.open({
+                      title: '使用兑换码',
+                      closeOnEscape: false,
+                      closeOnClickOutside: false,
+                      children: (
+                        <Stack>
+                          <TextInput
+                            label="兑换码"
+                            onChange={e => {
+                              currentRedeemCode.current = e.currentTarget.value;
+                            }}
+                          />
+                          <Button
+                            fullWidth
+                            onClick={async () => {
+                              modals.closeAll();
+                              try {
+                                await mv4RequestApi({
+                                  path: '/redeem-code/use',
+                                  data: {
+                                    code: currentRedeemCode.current,
+                                  },
+                                });
+                                notifications.show({
+                                  message: '成功使用兑换码',
+                                });
+                              } catch (e) {
+                                console.error(e);
+                                if (
+                                  e instanceof MV4RequestError ||
+                                  e instanceof Error
+                                ) {
+                                  notifications.show({
+                                    title: '兑换码使用失败',
+                                    message: e.message,
+                                    color: 'red',
+                                  });
+                                }
+                              }
+                            }}
+                            mt="md"
+                          >
+                            使用
+                          </Button>
+                        </Stack>
+                      ),
+                    });
+                  }}
+                >
+                  使用兑换码
                 </Button>
               </Group>
             </Stack>

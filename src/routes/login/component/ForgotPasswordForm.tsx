@@ -92,8 +92,8 @@ export default function ForgotPasswordForm({
               ，请及时查看邮件，邮件有效期为5分钟。
             </Text>
             <Text>
-              若没有看到邮件，请检查垃圾箱、以及是否拦截了来自 no-reply@boul.dev
-              的邮件。
+              若没有看到邮件，请检查垃圾箱、以及是否拦截了来自
+              no-reply@user.fastbuilder.pro 的邮件。
             </Text>
           </Box>
         ),

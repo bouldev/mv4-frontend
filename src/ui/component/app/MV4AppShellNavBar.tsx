@@ -22,6 +22,7 @@ import {
   Shop,
   SunOne,
   Theme,
+  Transaction,
   TransactionOrder,
   User,
 } from '@icon-park/react';
@@ -41,16 +42,18 @@ export default function MV4AppShellNavBar({
   doNavigateTo: (path: string) => void;
   toggleNavBar: VoidFunction;
 }) {
-  const navigateItemsUser = [
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [navigateItemsUser, setNavigateItemsUser] = useState([
     { name: '公告', link: '/app', icon: <Announcement /> },
     { name: '管理', link: '/app/manage', icon: <MoreApp /> },
     { name: '用户', link: '/app/user', icon: <User /> },
     { name: '商店', link: '/app/shop', icon: <Shop /> },
     { name: '下载', link: '/app/download', icon: <Download /> },
     { name: '关于', link: '/app/about', icon: <Help /> },
-  ];
+  ]);
 
-  const navigateItemsAdmin = [
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [navigateItemsAdmin, setNavigateItemsAdmin] = useState([
     { name: '用户管理', link: '/app/admin/user', icon: <EveryUser /> },
     { name: '订单管理', link: '/app/admin/order', icon: <TransactionOrder /> },
     { name: '商品管理', link: '/app/admin/item', icon: <Commodity /> },
@@ -60,7 +63,7 @@ export default function MV4AppShellNavBar({
       link: '/app/admin/publish-announcement',
       icon: <Announcement />,
     },
-  ];
+  ]);
 
   const [activeTab, setActiveTab] = useState<string | null>('user');
 
@@ -108,6 +111,20 @@ export default function MV4AppShellNavBar({
                 }
               />
             ))}
+          {/* 特殊 */}
+          {activeTab === 'user' &&
+            userModelState.user.permission >= MV4UserPermissionLevel.DEALER && (
+              <NavLink
+                key={'cash'}
+                onClick={() => doNavigateTo('/app/cash')}
+                active={'/app/cash' === window.location.pathname}
+                label={'收银台'}
+                leftSection={<Transaction />}
+                rightSection={
+                  '/app/cash' === window.location.pathname && <Right />
+                }
+              />
+            )}
           {activeTab === 'admin' &&
             userModelState.user.permission >= MV4UserPermissionLevel.ADMIN &&
             navigateItemsAdmin.map(value => (

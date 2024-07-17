@@ -101,13 +101,8 @@ export default function ManagePage() {
   }
 
   useEffect(() => {
-    let initLocker = false;
     const params = new URLSearchParams(window.location.search);
     async function init() {
-      if (initLocker) {
-        return;
-      }
-      initLocker = true;
       if (params.get('orderNo') !== null) {
         const order = await requestOrder(params.get('orderNo') as string);
         setOrder(order);
