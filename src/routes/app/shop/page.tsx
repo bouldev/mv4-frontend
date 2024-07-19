@@ -16,10 +16,11 @@ import {
   Title,
   useMantineColorScheme,
 } from '@mantine/core';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { notifications } from '@mantine/notifications';
 import { useModel } from '@modern-js/runtime/model';
 import { useDisclosure } from '@mantine/hooks';
+import { modals } from '@mantine/modals';
 import PageTitle from '@/ui/component/app/PageTitle';
 import eleCss from '@/ui/css/elements.module.css';
 import { MV4RequestError } from '@/api/base';
@@ -35,8 +36,6 @@ export default function ShopPage() {
   const [categoryList, setCategoryList] = useState<MV4ProductCategory[]>([]);
   const [productList, setProductList] = useState<MV4Product[]>([]);
   const [userModelState] = useModel(GlobalUserModel);
-  const [enableBuyForUsername, setEnableBuyForUsername] =
-    useState<boolean>(false);
   const [enableSetBuyAmount, setEnableSetBuyAmount] = useState<boolean>(false);
   const [currentProduct, setCurrentProduct] = useState<MV4Product>({
     productId: '',
@@ -50,12 +49,12 @@ export default function ShopPage() {
     canUseFBCoins: false,
   });
   const [buyModalOpened, buyModalActions] = useDisclosure(false);
-  const [currentUsernameInput, setCurrentUsernameInput] = useState('');
   const [currentSetBuyAmountInput, setCurrentSetBuyAmountInput] = useState<
     string | number
   >(1);
   const [shouldGenerateRedeemCode, setShouldGenerateRedeemCode] =
     useState(false);
+  const currentRedeemCode = useRef('');
 
   async function refreshShopList() {
     setShowLoading(true);
@@ -98,11 +97,57 @@ export default function ShopPage() {
 
   async function onClickProduct(product: MV4Product) {
     setCurrentProduct(product);
-    setEnableBuyForUsername(false);
-    setCurrentUsernameInput('');
     setEnableSetBuyAmount(false);
     setCurrentSetBuyAmountInput(1);
     buyModalActions.open();
+  }
+
+  async function onClickUseRedeemCode() {
+    currentRedeemCode.current = '';
+    modals.open({
+      title: '使用兑换码',
+      closeOnEscape: false,
+      closeOnClickOutside: false,
+      children: (
+        <Stack>
+          <TextInput
+            label="兑换码"
+            onChange={e => {
+              currentRedeemCode.current = e.currentTarget.value;
+            }}
+          />
+          <Button
+            fullWidth
+            onClick={async () => {
+              modals.closeAll();
+              try {
+                await mv4RequestApi({
+                  path: '/redeem-code/use',
+                  data: {
+                    code: currentRedeemCode.current,
+                  },
+                });
+                notifications.show({
+                  message: '成功使用兑换码',
+                });
+              } catch (e) {
+                console.error(e);
+                if (e instanceof MV4RequestError || e instanceof Error) {
+                  notifications.show({
+                    title: '兑换码使用失败',
+                    message: e.message,
+                    color: 'red',
+                  });
+                }
+              }
+            }}
+            mt="md"
+          >
+            使用
+          </Button>
+        </Stack>
+      ),
+    });
   }
 
   useEffect(() => {
@@ -147,50 +192,19 @@ export default function ShopPage() {
               )}
             </Box>
           )}
-          {userModelState.user.permission >= MV4UserPermissionLevel.DEALER && (
-            <Stack>
-              {!enableBuyForUsername && (
-                <Checkbox
-                  label="改为获取该商品兑换码"
-                  checked={shouldGenerateRedeemCode}
-                  onChange={event => {
-                    setShouldGenerateRedeemCode(event.currentTarget.checked);
-                    setEnableBuyForUsername(false);
-                    setCurrentUsernameInput('');
-                  }}
-                />
-              )}
-              {!shouldGenerateRedeemCode && (
-                <>
-                  <Checkbox
-                    label="为其他用户购买（只能使用余额）"
-                    checked={enableBuyForUsername}
-                    onChange={event => {
-                      if (!event.currentTarget.checked) {
-                        setCurrentUsernameInput('');
-                      }
-                      setEnableBuyForUsername(event.currentTarget.checked);
-                    }}
-                  />
-                  {enableBuyForUsername && (
-                    <Box>
-                      <TextInput
-                        label="目标用户名"
-                        value={currentUsernameInput}
-                        onChange={event =>
-                          setCurrentUsernameInput(event.currentTarget.value)
-                        }
-                      />
-                      <Space h={5} />
-                    </Box>
-                  )}
-                </>
-              )}
-            </Stack>
-          )}
           <Stack>
+            {userModelState.user.permission >=
+              MV4UserPermissionLevel.DEALER && (
+              <Checkbox
+                label="改为获取该商品兑换码（只能使用余额）"
+                checked={shouldGenerateRedeemCode}
+                onChange={event => {
+                  setShouldGenerateRedeemCode(event.currentTarget.checked);
+                }}
+              />
+            )}
             <Checkbox
-              label="多数量购买"
+              label="批量购买"
               checked={enableSetBuyAmount}
               onChange={event => {
                 if (!event.currentTarget.checked) {
@@ -200,17 +214,15 @@ export default function ShopPage() {
               }}
             />
             {enableSetBuyAmount && (
-              <Box>
-                <NumberInput
-                  label="数量"
-                  min={1}
-                  allowDecimal={false}
-                  allowNegative={false}
-                  value={currentSetBuyAmountInput}
-                  onChange={setCurrentSetBuyAmountInput}
-                />
-                <Space h={5} />
-              </Box>
+              <NumberInput
+                label="购买件数"
+                min={1}
+                max={100}
+                allowDecimal={false}
+                allowNegative={false}
+                value={currentSetBuyAmountInput}
+                onChange={setCurrentSetBuyAmountInput}
+              />
             )}
           </Stack>
           <Group justify="flex-end">
@@ -233,10 +245,7 @@ export default function ShopPage() {
                   >({
                     path: '/shop/buy-product',
                     data: {
-                      buyForUsername:
-                        currentUsernameInput.length > 0
-                          ? currentUsernameInput
-                          : userModelState.user.username,
+                      buyForUsername: userModelState.user.username,
                       productId: currentProduct.productId,
                       amount: currentSetBuyAmountInput
                         ? currentSetBuyAmountInput
@@ -307,6 +316,25 @@ export default function ShopPage() {
             })}
           </Stack>
         </Tabs>
+      </Card>
+      <Card
+        shadow="sm"
+        padding="lg"
+        radius="md"
+        withBorder
+        className={`${eleCss.appShellBg} ${
+          colorScheme === 'light' ? eleCss.appShellBgLight : ''
+        }`}
+      >
+        <Stack gap={'md'}>
+          <Title order={4}>兑换码</Title>
+          <Stack gap={'sm'}>
+            <Text size={'sm'}>可在此处使用获得的兑换码。</Text>
+            <Group gap={'sm'}>
+              <Button onClick={onClickUseRedeemCode}>使用兑换码</Button>
+            </Group>
+          </Stack>
+        </Stack>
       </Card>
     </Stack>
   );
