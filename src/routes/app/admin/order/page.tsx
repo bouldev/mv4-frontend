@@ -140,10 +140,10 @@ export default function OrderPage() {
                                     实际支付金额：{item.realPrice}￥
                                   </Text>
                                   <Text size="sm">
-                                    FBCoin抵扣：{item.usedFBCoins}
+                                    使用FBCoin：{item.usedFBCoins}
                                   </Text>
                                   <Text size="sm">
-                                    余额抵扣：{item.usedBalance}
+                                    使用余额：{item.usedBalance}
                                   </Text>
                                 </Stack>
                               ),

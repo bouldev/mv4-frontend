@@ -37,6 +37,7 @@ export default function ShopPage() {
   const [productList, setProductList] = useState<MV4Product[]>([]);
   const [userModelState] = useModel(GlobalUserModel);
   const [enableSetBuyAmount, setEnableSetBuyAmount] = useState<boolean>(false);
+  const [enableUseFBCoin, setEnableUseFBCoin] = useState<boolean>(false);
   const [currentProduct, setCurrentProduct] = useState<MV4Product>({
     productId: '',
     name: '',
@@ -52,7 +53,7 @@ export default function ShopPage() {
   const [currentSetBuyAmountInput, setCurrentSetBuyAmountInput] = useState<
     string | number
   >(1);
-  const [shouldGenerateRedeemCode, setShouldGenerateRedeemCode] =
+  const [enableGenerateRedeemCode, setEnableGenerateRedeemCode] =
     useState(false);
   const currentRedeemCode = useRef('');
 
@@ -97,6 +98,7 @@ export default function ShopPage() {
 
   async function onClickProduct(product: MV4Product) {
     setCurrentProduct(product);
+    setEnableUseFBCoin(false);
     setEnableSetBuyAmount(false);
     setCurrentSetBuyAmountInput(1);
     buyModalActions.open();
@@ -193,13 +195,54 @@ export default function ShopPage() {
             </Box>
           )}
           <Stack>
-            {userModelState.user.permission >=
-              MV4UserPermissionLevel.DEALER && (
+            {currentProduct.canUseBalance &&
+              userModelState.user.permission >=
+                MV4UserPermissionLevel.DEALER && (
+                <Checkbox
+                  label="改为获取该商品兑换码（只能使用余额）"
+                  checked={enableGenerateRedeemCode}
+                  onChange={event => {
+                    setEnableGenerateRedeemCode(event.currentTarget.checked);
+                  }}
+                />
+              )}
+            {enableUseFBCoin && (
+              <>
+                <Text size={'xs'}>
+                  您当前持有 {userModelState.user.fbCoins} FBCoins
+                </Text>
+                {currentProduct.canPayDirectly ? (
+                  <Text size={'xs'}>
+                    使用FBCoin抵扣后，
+                    {/* eslint-disable-next-line no-nested-ternary */}
+                    {userModelState.user.fbCoins - currentProduct.price / 2 > 0
+                      ? currentProduct.price % 2 === 0
+                        ? '您无需支付费用'
+                        : `您还需支付 ￥ ${currentProduct.price % 2}`
+                      : `您还需支付 ￥ ${
+                          currentProduct.price - userModelState.user.fbCoins * 2
+                        }`}
+                    。
+                  </Text>
+                ) : (
+                  <Text size={'xs'}>
+                    {/* eslint-disable-next-line no-nested-ternary */}
+                    {userModelState.user.fbCoins - currentProduct.price / 2 > 0
+                      ? currentProduct.price % 2 === 0
+                        ? '使用FBCoin抵扣后，您无需支付费用'
+                        : '注意：因无法正确抵扣价格，无法购买该商品'
+                      : '注意：您当前的FBCoin余额不足以购买该商品'}
+                    。
+                  </Text>
+                )}
+              </>
+            )}
+            {currentProduct.canUseFBCoins && !enableGenerateRedeemCode && (
               <Checkbox
-                label="改为获取该商品兑换码（只能使用余额）"
-                checked={shouldGenerateRedeemCode}
+                label="使用FBCoin (1:2)"
+                checked={enableUseFBCoin}
                 onChange={event => {
-                  setShouldGenerateRedeemCode(event.currentTarget.checked);
+                  setEnableUseFBCoin(event.currentTarget.checked);
                 }}
               />
             )}
@@ -217,7 +260,12 @@ export default function ShopPage() {
               <NumberInput
                 label="购买件数"
                 min={1}
-                max={100}
+                max={
+                  userModelState.user.permission >=
+                  MV4UserPermissionLevel.DEALER
+                    ? 100
+                    : 5
+                }
                 allowDecimal={false}
                 allowNegative={false}
                 value={currentSetBuyAmountInput}
@@ -250,7 +298,8 @@ export default function ShopPage() {
                       amount: currentSetBuyAmountInput
                         ? currentSetBuyAmountInput
                         : 1,
-                      gen: shouldGenerateRedeemCode,
+                      gen: enableGenerateRedeemCode,
+                      useCoin: enableUseFBCoin,
                     },
                   });
                   window.location.href = `/app/pay-order?orderNo=${ret.data.orderNo}`;

@@ -81,7 +81,7 @@ export default function ManagePage() {
     } catch (e) {
       if (e instanceof Error || e instanceof MV4RequestError) {
         notifications.show({
-          title: '订单查询失败',
+          title: '订单催处理失败',
           message: e.message,
           color: 'red',
         });
@@ -193,13 +193,15 @@ export default function ManagePage() {
                                     实际支付金额：{item.realPrice}￥
                                   </Text>
                                   <Text size="sm">
-                                    FBCoin抵扣：{item.usedFBCoins}
+                                    使用FBCoin：{item.usedFBCoins}
                                   </Text>
                                   <Text size="sm">
-                                    余额抵扣：{item.usedBalance}
+                                    使用余额：{item.usedBalance}
                                   </Text>
                                   <Group>
-                                    {item.createTime + 300 > nowUnix() &&
+                                    {item.orderStatus ===
+                                      MV4OrderStatusEnum.WAITING_TO_PAY &&
+                                      item.createTime + 300 > nowUnix() &&
                                       !item.payTime && (
                                         <Button
                                           size="xs"

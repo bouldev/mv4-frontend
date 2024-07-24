@@ -77,13 +77,9 @@ export default function ManagePage() {
         message: '已经催处理，稍后将刷新状态',
       });
     } catch (e) {
-      if (e instanceof MV4RequestError) {
-        showModal(e.message);
-        return;
-      }
-      if (e instanceof Error) {
+      if (e instanceof Error || e instanceof MV4RequestError) {
         notifications.show({
-          title: '订单查询失败',
+          title: '订单催处理失败',
           message: e.message,
           color: 'red',
         });
@@ -232,11 +228,11 @@ export default function ManagePage() {
                   <Text size="xs" c="dimmed">
                     {order.realPrice}
                   </Text>
-                  <Text size="sm">FBCoin抵扣</Text>
+                  <Text size="sm">使用FBCoin</Text>
                   <Text size="xs" c="dimmed">
                     {order.usedFBCoins}
                   </Text>
-                  <Text size="sm">余额抵扣</Text>
+                  <Text size="sm">使用余额</Text>
                   <Text size="xs" c="dimmed">
                     {order.usedBalance}
                   </Text>
