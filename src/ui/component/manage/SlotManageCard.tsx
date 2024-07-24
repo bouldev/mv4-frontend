@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Card,
   Group,
@@ -354,10 +355,13 @@ export default function SlotManageCard() {
       }`}
     >
       <Stack gap={'md'}>
-        <Title order={4}>您的 SLOT（槽位）</Title>
-        <Text size={'sm'}>
-          除您绑定的游戏账号外，您只能使辅助用户进入以下租赁服/游戏账号名下的租赁服。
-        </Text>
+        <Title order={4}>您的 SLOT（卡槽）</Title>
+        <Box>
+          <Text size={'sm'}>
+            除您绑定的游戏账号外，您只能使辅助用户进入以下租赁服/游戏账号名下的租赁服。
+          </Text>
+          <Text size={'sm'}>卡槽只会在初始化后开始计算有效期。</Text>
+        </Box>
         {cardLoading && (
           <Text size={'sm'} fs={'italic'}>
             请稍等，正在加载。。。
