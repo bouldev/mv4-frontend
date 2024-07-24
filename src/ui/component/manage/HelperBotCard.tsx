@@ -462,10 +462,11 @@ export default function HelperBotCard() {
                     ? helperBotState.nickname
                     : '（未设置昵称）'}{' '}
                   <Text span>
-                    Lv.
+                    (Lv.
                     {helperBotState.level > 0
                       ? `${helperBotState.level} (${helperBotState.exp}/${helperBotState.need_exp})`
                       : '-'}
+                    )
                   </Text>
                 </Text>
                 <Group gap={'sm'} pt={'sm'}>
