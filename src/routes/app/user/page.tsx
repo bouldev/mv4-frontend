@@ -29,6 +29,7 @@ import { MV4RequestError } from '@/api/base';
 import { mv4RequestApi } from '@/api/mv4Client';
 import { ModalConfirmPlayerWithAvatar } from '@/ui/component/ModalConfirmPlayerWithAvatar';
 import { nemcQueryPlayer } from '@/api/nemcQueryPlayer';
+import { downloadBlobText } from '@/utils/blobUtils';
 
 export default function UserPage() {
   const { colorScheme } = useMantineColorScheme();
@@ -334,6 +335,50 @@ export default function UserPage() {
                   }}
                 >
                   修改密码
+                </Button>
+              </Group>
+            </Stack>
+          </Stack>
+        </Card>
+        <Card
+          shadow="sm"
+          padding="lg"
+          radius="md"
+          withBorder
+          className={`${eleCss.appShellBg} ${
+            colorScheme === 'light' ? eleCss.appShellBgLight : ''
+          }`}
+        >
+          <Stack gap={'md'}>
+            <Title order={4}>FBToken</Title>
+            <Stack gap={'sm'}>
+              <Group gap={'sm'}>
+                <Button
+                  onClick={async () => {
+                    try {
+                      const ret = await mv4RequestApi<
+                        any,
+                        {
+                          token: string;
+                        }
+                      >({
+                        path: '/user/get-fbtoken',
+                        methodGet: true,
+                      });
+                      downloadBlobText(ret.data.token, 'fbtoken');
+                    } catch (e) {
+                      console.error(e);
+                      if (e instanceof MV4RequestError || e instanceof Error) {
+                        notifications.show({
+                          title: '获取FBToken失败',
+                          message: e.message,
+                          color: 'red',
+                        });
+                      }
+                    }
+                  }}
+                >
+                  获取FBToken
                 </Button>
               </Group>
             </Stack>
