@@ -208,35 +208,68 @@ export default function ShopPage() {
                 />
               )}
             {enableUseFBCoin && (
-              <>
+              <Box>
                 <Text size={'xs'}>
-                  您当前持有 {userModelState.user.fbCoins} FBCoins
+                  您当前持有 {userModelState.user.fbCoins} FBCoin
                 </Text>
-                {currentProduct.canPayDirectly ? (
-                  <Text size={'xs'}>
-                    使用FBCoin抵扣后，
-                    {/* eslint-disable-next-line no-nested-ternary */}
-                    {userModelState.user.fbCoins - currentProduct.price / 2 > 0
-                      ? currentProduct.price % 2 === 0
-                        ? '您无需支付费用'
-                        : `您还需支付 ￥ ${currentProduct.price % 2}`
-                      : `您还需支付 ￥ ${
-                          currentProduct.price - userModelState.user.fbCoins * 2
-                        }`}
-                    。
-                  </Text>
+                {userModelState.user.fbCoins > 0 ? (
+                  <>
+                    <Text size="xs">
+                      本次将消耗{' '}
+                      {userModelState.user.fbCoins -
+                        Number(currentSetBuyAmountInput) *
+                          Math.floor(currentProduct.price / 2) >=
+                      0
+                        ? Number(currentSetBuyAmountInput) *
+                          Math.floor(currentProduct.price / 2)
+                        : userModelState.user.fbCoins}{' '}
+                      FBCoin
+                    </Text>
+                    {currentProduct.canPayDirectly ? (
+                      <Text size={'xs'}>
+                        使用FBCoin抵扣后，
+                        {/* eslint-disable-next-line no-nested-ternary */}
+                        {userModelState.user.fbCoins -
+                          (currentProduct.price *
+                            Number(currentSetBuyAmountInput)) /
+                            2 >=
+                        0
+                          ? (currentProduct.price *
+                              Number(currentSetBuyAmountInput)) %
+                              2 ===
+                            0
+                            ? '您无需支付费用'
+                            : `您还需支付 ￥ ${currentProduct.price % 2}`
+                          : `您还需支付 ￥ ${
+                              currentProduct.price *
+                                Number(currentSetBuyAmountInput) -
+                              userModelState.user.fbCoins * 2
+                            }`}
+                        。
+                      </Text>
+                    ) : (
+                      <Text size={'xs'}>
+                        {/* eslint-disable-next-line no-nested-ternary */}
+                        {userModelState.user.fbCoins -
+                          (currentProduct.price *
+                            Number(currentSetBuyAmountInput)) /
+                            2 >=
+                        0
+                          ? (currentProduct.price *
+                              Number(currentSetBuyAmountInput)) %
+                              2 ===
+                            0
+                            ? '使用FBCoin抵扣后，您无需支付费用'
+                            : '注意：因无法正确抵扣价格，无法购买该商品'
+                          : '注意：您当前的FBCoin余额不足以购买该商品'}
+                        。
+                      </Text>
+                    )}
+                  </>
                 ) : (
-                  <Text size={'xs'}>
-                    {/* eslint-disable-next-line no-nested-ternary */}
-                    {userModelState.user.fbCoins - currentProduct.price / 2 > 0
-                      ? currentProduct.price % 2 === 0
-                        ? '使用FBCoin抵扣后，您无需支付费用'
-                        : '注意：因无法正确抵扣价格，无法购买该商品'
-                      : '注意：您当前的FBCoin余额不足以购买该商品'}
-                    。
-                  </Text>
+                  <Text size={'xs'}>无法使用FBCoin抵扣。</Text>
                 )}
-              </>
+              </Box>
             )}
             {currentProduct.canUseFBCoins && !enableGenerateRedeemCode && (
               <Checkbox
