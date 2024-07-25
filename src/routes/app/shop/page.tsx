@@ -28,6 +28,7 @@ import { MV4Product, MV4ProductCategory } from '@/api/product';
 import { mv4RequestApi } from '@/api/mv4Client';
 import { GlobalUserModel } from '@/model/globalUserModel';
 import { MV4UserPermissionLevel } from '@/api/user';
+import MV4Card from '@/ui/component/app/MV4Card';
 
 export default function ShopPage() {
   const { colorScheme } = useMantineColorScheme();
@@ -366,15 +367,7 @@ export default function ShopPage() {
           </Stack>
         </Tabs>
       </Card>
-      <Card
-        shadow="sm"
-        padding="lg"
-        radius="md"
-        withBorder
-        className={`${eleCss.appShellBg} ${
-          colorScheme === 'light' ? eleCss.appShellBgLight : ''
-        }`}
-      >
+      <MV4Card>
         <Stack gap={'md'}>
           <Title order={4}>兑换码</Title>
           <Stack gap={'sm'}>
@@ -384,7 +377,7 @@ export default function ShopPage() {
             </Group>
           </Stack>
         </Stack>
-      </Card>
+      </MV4Card>
     </Stack>
   );
 }

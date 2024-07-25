@@ -1,29 +1,12 @@
-import {
-  Anchor,
-  Card,
-  Stack,
-  Text,
-  Title,
-  useMantineColorScheme,
-} from '@mantine/core';
+import { Anchor, Stack, Text, Title } from '@mantine/core';
 import PageTitle from '@/ui/component/app/PageTitle';
-import eleCss from '@/ui/css/elements.module.css';
+import MV4Card from '@/ui/component/app/MV4Card';
 
 export default function AboutPage() {
-  const { colorScheme } = useMantineColorScheme();
-
   return (
     <Stack>
       <PageTitle>关于</PageTitle>
-      <Card
-        shadow="sm"
-        padding="lg"
-        radius="md"
-        withBorder
-        className={`${eleCss.appShellBg} ${
-          colorScheme === 'light' ? eleCss.appShellBgLight : ''
-        }`}
-      >
+      <MV4Card>
         <Stack gap={'md'}>
           <Title order={4}>FastBuilder UserCenter Next (mv4)</Title>
           <Stack gap={'xs'}>
@@ -82,7 +65,7 @@ export default function AboutPage() {
             </Text>
           </Stack>
         </Stack>
-      </Card>
+      </MV4Card>
     </Stack>
   );
 }

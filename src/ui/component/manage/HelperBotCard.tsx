@@ -2,27 +2,24 @@ import {
   Alert,
   Box,
   Button,
-  Card,
   Group,
   PasswordInput,
   Stack,
   Text,
   TextInput,
   Title,
-  useMantineColorScheme,
 } from '@mantine/core';
 import { Caution, Key, User } from '@icon-park/react';
 import { useEffect, useRef, useState } from 'react';
 import { notifications } from '@mantine/notifications';
 import { modals } from '@mantine/modals';
 import { MD5 } from 'crypto-js';
-import eleCss from '@/ui/css/elements.module.css';
 import { HelperBotStatus } from '@/api/helper_bot';
 import { mv4RequestApi } from '@/api/mv4Client';
 import { MV4RequestError } from '@/api/base';
+import MV4Card from '@/ui/component/app/MV4Card';
 
 export default function HelperBotCard() {
-  const { colorScheme } = useMantineColorScheme();
   const [helperBotState, setHelperBotState] = useState<{
     loaded: boolean;
     helperBotStatus: HelperBotStatus;
@@ -379,15 +376,7 @@ export default function HelperBotCard() {
   }, []);
 
   return (
-    <Card
-      shadow="sm"
-      padding="lg"
-      radius="md"
-      withBorder
-      className={`${eleCss.appShellBg} ${
-        colorScheme === 'light' ? eleCss.appShellBgLight : ''
-      }`}
-    >
+    <MV4Card>
       <Stack gap={'md'}>
         <Title order={4}>您的辅助用户</Title>
         <Box>
@@ -497,6 +486,6 @@ export default function HelperBotCard() {
           </Text>
         )}
       </Stack>
-    </Card>
+    </MV4Card>
   );
 }

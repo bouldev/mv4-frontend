@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  Card,
   Divider,
   Group,
   LoadingOverlay,
@@ -15,7 +14,6 @@ import {
   Textarea,
   TextInput,
   Title,
-  useMantineColorScheme,
 } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { useEffect, useState } from 'react';
@@ -23,15 +21,14 @@ import { notifications } from '@mantine/notifications';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import PageTitle from '@/ui/component/app/PageTitle';
-import eleCss from '@/ui/css/elements.module.css';
 import { MV4ProductCategoryFull, MV4ProductFull } from '@/api/product';
 import { permissionToString, productTypeToString } from '@/utils/stringUtils';
 import { MV4RequestError } from '@/api/base';
 import { mv4RequestApi } from '@/api/mv4Client';
 import { MV4UserPermissionLevel, MV4UserProductType } from '@/api/user';
+import MV4Card from '@/ui/component/app/MV4Card';
 
 export default function ManagePage() {
-  const { colorScheme } = useMantineColorScheme();
   const [productList, setProductList] = useState<MV4ProductFull[]>([]);
   const [categoryList, setCategoryList] = useState<MV4ProductCategoryFull[]>(
     [],
@@ -623,15 +620,7 @@ export default function ManagePage() {
       </Modal>
       <PageTitle>商品管理</PageTitle>
       <Stack gap={'sm'}>
-        <Card
-          shadow="sm"
-          padding="lg"
-          radius="md"
-          withBorder
-          className={`${eleCss.appShellBg} ${
-            colorScheme === 'light' ? eleCss.appShellBgLight : ''
-          }`}
-        >
+        <MV4Card>
           <Stack gap={'md'}>
             <Title order={4}>分区列表</Title>
             <Group>
@@ -707,16 +696,8 @@ export default function ManagePage() {
               </Table>
             </Box>
           </Stack>
-        </Card>
-        <Card
-          shadow="sm"
-          padding="lg"
-          radius="md"
-          withBorder
-          className={`${eleCss.appShellBg} ${
-            colorScheme === 'light' ? eleCss.appShellBgLight : ''
-          }`}
-        >
+        </MV4Card>
+        <MV4Card>
           <Stack gap={'md'}>
             <Title order={4}>商品列表</Title>
             <Group>
@@ -857,7 +838,7 @@ export default function ManagePage() {
               </Table>
             </Box>
           </Stack>
-        </Card>
+        </MV4Card>
       </Stack>
     </Stack>
   );

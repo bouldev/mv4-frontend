@@ -1,25 +1,22 @@
 import {
   Button,
-  Card,
   Group,
   Stack,
   Text,
   Textarea,
   TextInput,
   Title,
-  useMantineColorScheme,
 } from '@mantine/core';
 import { useRef, useState } from 'react';
 import { notifications } from '@mantine/notifications';
 import { modals } from '@mantine/modals';
 import PageTitle from '@/ui/component/app/PageTitle';
-import eleCss from '@/ui/css/elements.module.css';
 import { mv4RequestApi } from '@/api/mv4Client';
 import { MV4RequestError } from '@/api/base';
 import { formatTime } from '@/utils/timeUtils';
+import MV4Card from '@/ui/component/app/MV4Card';
 
 export default function ManagePage() {
-  const { colorScheme } = useMantineColorScheme();
   const currentRedeemCode = useRef('');
   const currentOrderNo = useRef('');
   const [exportedText, setExportedText] = useState('');
@@ -161,15 +158,7 @@ export default function ManagePage() {
     <Stack>
       <PageTitle>收银台</PageTitle>
       <Stack gap={'sm'}>
-        <Card
-          shadow="sm"
-          padding="lg"
-          radius="md"
-          withBorder
-          className={`${eleCss.appShellBg} ${
-            colorScheme === 'light' ? eleCss.appShellBgLight : ''
-          }`}
-        >
+        <MV4Card>
           <Stack gap={'md'}>
             <Title order={4}>操作</Title>
             <Group>
@@ -188,7 +177,7 @@ export default function ManagePage() {
               maxRows={20}
             />
           </Stack>
-        </Card>
+        </MV4Card>
       </Stack>
     </Stack>
   );

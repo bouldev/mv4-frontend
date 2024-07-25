@@ -1,6 +1,5 @@
 import {
   Button,
-  Card,
   Divider,
   Group,
   LoadingOverlay,
@@ -9,21 +8,19 @@ import {
   Text,
   TextInput,
   Title,
-  useMantineColorScheme,
 } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import PageTitle from '@/ui/component/app/PageTitle';
-import eleCss from '@/ui/css/elements.module.css';
 import { MV4Order } from '@/api/order';
 import { getOrderStatusEmoji, getOrderStatusString } from '@/utils/orderUtils';
 import { MV4RequestError } from '@/api/base';
 import { mv4RequestApi } from '@/api/mv4Client';
 import { formatTime } from '@/utils/timeUtils';
+import MV4Card from '@/ui/component/app/MV4Card';
 
 export default function OrderPage() {
-  const { colorScheme } = useMantineColorScheme();
   const [orders, setOrders] = useState<MV4Order[]>([]);
   const [showLoading, setShowLoading] = useState(true);
   const [usernameInput, setUsernameInput] = useState<string>('');
@@ -64,15 +61,7 @@ export default function OrderPage() {
     <Stack>
       <PageTitle>订单管理</PageTitle>
       <Stack gap={'sm'}>
-        <Card
-          shadow="sm"
-          padding="lg"
-          radius="md"
-          withBorder
-          className={`${eleCss.appShellBg} ${
-            colorScheme === 'light' ? eleCss.appShellBgLight : ''
-          }`}
-        >
+        <MV4Card>
           <LoadingOverlay
             visible={showLoading}
             overlayProps={{ radius: 'sm', blur: 2 }}
@@ -177,7 +166,7 @@ export default function OrderPage() {
               </Group>
             </Stack>
           </Stack>
-        </Card>
+        </MV4Card>
       </Stack>
     </Stack>
   );

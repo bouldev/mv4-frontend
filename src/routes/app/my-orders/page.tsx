@@ -1,26 +1,16 @@
-import {
-  Button,
-  Card,
-  Group,
-  Stack,
-  Table,
-  Text,
-  Title,
-  useMantineColorScheme,
-} from '@mantine/core';
+import { Button, Group, Stack, Table, Text, Title } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { useEffect, useState } from 'react';
 import { notifications } from '@mantine/notifications';
 import PageTitle from '@/ui/component/app/PageTitle';
-import eleCss from '@/ui/css/elements.module.css';
 import { getOrderStatusEmoji, getOrderStatusString } from '@/utils/orderUtils';
 import { formatTime, nowUnix } from '@/utils/timeUtils';
 import { MV4Order, MV4OrderStatusEnum } from '@/api/order';
 import { mv4RequestApi } from '@/api/mv4Client';
 import { MV4RequestError } from '@/api/base';
+import MV4Card from '@/ui/component/app/MV4Card';
 
 export default function ManagePage() {
-  const { colorScheme } = useMantineColorScheme();
   const [orders, setOrders] = useState<MV4Order[]>([]);
   const [showLoading, setShowLoading] = useState(true);
 
@@ -117,15 +107,7 @@ export default function ManagePage() {
     <Stack>
       <PageTitle>历史订单</PageTitle>
       <Stack gap={'sm'}>
-        <Card
-          shadow="sm"
-          padding="lg"
-          radius="md"
-          withBorder
-          className={`${eleCss.appShellBg} ${
-            colorScheme === 'light' ? eleCss.appShellBgLight : ''
-          }`}
-        >
+        <MV4Card>
           <Stack gap={'md'}>
             <Title order={4}>订单列表（前30条）</Title>
             {showLoading && (
@@ -254,7 +236,7 @@ export default function ManagePage() {
               </Table>
             )}
           </Stack>
-        </Card>
+        </MV4Card>
       </Stack>
     </Stack>
   );

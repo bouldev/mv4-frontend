@@ -1,18 +1,15 @@
 import {
   Box,
   Button,
-  Card,
   Group,
   Stack,
   Text,
   TextInput,
   Title,
-  useMantineColorScheme,
 } from '@mantine/core';
 import { useEffect, useRef, useState } from 'react';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
-import eleCss from '@/ui/css/elements.module.css';
 import { ServerSlot, ServerSlotDataType } from '@/api/slot';
 import {
   formatTime,
@@ -23,9 +20,9 @@ import { mv4RequestApi } from '@/api/mv4Client';
 import { MV4RequestError } from '@/api/base';
 import { nemcQueryPlayer } from '@/api/nemcQueryPlayer';
 import { ModalConfirmPlayerWithAvatar } from '@/ui/component/ModalConfirmPlayerWithAvatar';
+import MV4Card from '@/ui/component/app/MV4Card';
 
 export default function SlotManageCard() {
-  const { colorScheme } = useMantineColorScheme();
   const [cardLoading, setCardLoading] = useState(true);
   const currentInitInput = useRef('');
   const currentMarkInput = useRef('');
@@ -345,15 +342,7 @@ export default function SlotManageCard() {
   }
 
   return (
-    <Card
-      shadow="sm"
-      padding="md"
-      radius="md"
-      withBorder
-      className={`${eleCss.appShellBg} ${
-        colorScheme === 'light' ? eleCss.appShellBgLight : ''
-      }`}
-    >
+    <MV4Card>
       <Stack gap={'md'}>
         <Title order={4}>您的 SLOT（卡槽）</Title>
         <Box>
@@ -374,16 +363,7 @@ export default function SlotManageCard() {
         )}
         {!cardLoading &&
           slots.map((item, i) => (
-            <Card
-              key={item.slotId}
-              shadow="sm"
-              padding="sm"
-              radius="md"
-              withBorder
-              className={`${eleCss.appShellBg} ${
-                colorScheme === 'light' ? eleCss.appShellBgLight : ''
-              }`}
-            >
+            <MV4Card key={item.slotId}>
               <Group justify={'space-between'}>
                 <Stack>
                   {item.expire !== -1 ? (
@@ -457,9 +437,9 @@ export default function SlotManageCard() {
                   )}
                 </Group>
               </Group>
-            </Card>
+            </MV4Card>
           ))}
       </Stack>
-    </Card>
+    </MV4Card>
   );
 }

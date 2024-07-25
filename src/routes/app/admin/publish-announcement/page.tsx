@@ -1,13 +1,5 @@
 /* eslint-disable import/no-named-as-default */
-import {
-  Button,
-  Card,
-  Group,
-  Stack,
-  Text,
-  TextInput,
-  useMantineColorScheme,
-} from '@mantine/core';
+import { Button, Group, Stack, Text, TextInput } from '@mantine/core';
 import { useEditor } from '@tiptap/react';
 import Highlight from '@tiptap/extension-highlight';
 import StarterKit from '@tiptap/starter-kit';
@@ -23,13 +15,12 @@ import { useState } from 'react';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import { useNavigate } from '@modern-js/runtime/router';
-import eleCss from '@/ui/css/elements.module.css';
 import PageTitle from '@/ui/component/app/PageTitle';
 import { mv4RequestApi } from '@/api/mv4Client';
 import { MV4RequestError } from '@/api/base';
+import MV4Card from '@/ui/component/app/MV4Card';
 
 export default function PublishAnnouncementPage() {
-  const { colorScheme } = useMantineColorScheme();
   const navigate = useNavigate();
   const [titleValue, setTitleValue] = useState('');
   const editor = useEditor({
@@ -84,15 +75,7 @@ export default function PublishAnnouncementPage() {
     <Stack>
       <PageTitle>发布公告</PageTitle>
       <Stack gap={'sm'}>
-        <Card
-          shadow="sm"
-          padding="lg"
-          radius="md"
-          withBorder
-          className={`${eleCss.appShellBg} ${
-            colorScheme === 'light' ? eleCss.appShellBgLight : ''
-          }`}
-        >
+        <MV4Card>
           <Stack gap={'md'}>
             <Stack gap={'xs'}>
               <Text size={'sm'}>标题</Text>
@@ -176,7 +159,7 @@ export default function PublishAnnouncementPage() {
               <Button onClick={onClickPublishAnnouncement}>发布</Button>
             </Group>
           </Stack>
-        </Card>
+        </MV4Card>
       </Stack>
     </Stack>
   );

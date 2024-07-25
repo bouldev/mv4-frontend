@@ -3,13 +3,11 @@ import {
   Avatar,
   Box,
   Button,
-  Card,
   Group,
   Stack,
   Text,
   TextInput,
   Title,
-  useMantineColorScheme,
 } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { useEffect, useRef, useState } from 'react';
@@ -18,7 +16,6 @@ import { useModel } from '@modern-js/runtime/model';
 import { useNavigate } from '@modern-js/runtime/router';
 import { notifications } from '@mantine/notifications';
 import PageTitle from '@/ui/component/app/PageTitle';
-import eleCss from '@/ui/css/elements.module.css';
 import {
   permissionToString,
   productExpireDateToString,
@@ -30,9 +27,9 @@ import { mv4RequestApi } from '@/api/mv4Client';
 import { ModalConfirmPlayerWithAvatar } from '@/ui/component/ModalConfirmPlayerWithAvatar';
 import { nemcQueryPlayer } from '@/api/nemcQueryPlayer';
 import { downloadBlobText } from '@/utils/blobUtils';
+import MV4Card from '@/ui/component/app/MV4Card';
 
 export default function UserPage() {
-  const { colorScheme } = useMantineColorScheme();
   const [userModelState, userModelActions] = useModel(GlobalUserModel);
   const [showMore, setShowMore] = useState(false);
   const [showLoading, setShowLoading] = useState(true);
@@ -168,15 +165,7 @@ export default function UserPage() {
     <Stack>
       <PageTitle>用户</PageTitle>
       <Stack gap={'sm'}>
-        <Card
-          shadow="sm"
-          padding="lg"
-          radius="md"
-          withBorder
-          className={`${eleCss.appShellBg} ${
-            colorScheme === 'light' ? eleCss.appShellBgLight : ''
-          }`}
-        >
+        <MV4Card>
           <Stack gap={'md'}>
             <Group gap={'sm'}>
               <Avatar
@@ -213,16 +202,8 @@ export default function UserPage() {
               </Stack>
             </Group>
           </Stack>
-        </Card>
-        <Card
-          shadow="sm"
-          padding="lg"
-          radius="md"
-          withBorder
-          className={`${eleCss.appShellBg} ${
-            colorScheme === 'light' ? eleCss.appShellBgLight : ''
-          }`}
-        >
+        </MV4Card>
+        <MV4Card>
           <Stack gap={'md'}>
             <Title order={4}>账号信息</Title>
             <Stack gap={'sm'}>
@@ -249,16 +230,8 @@ export default function UserPage() {
               </Group>
             </Stack>
           </Stack>
-        </Card>
-        <Card
-          shadow="sm"
-          padding="lg"
-          radius="md"
-          withBorder
-          className={`${eleCss.appShellBg} ${
-            colorScheme === 'light' ? eleCss.appShellBgLight : ''
-          }`}
-        >
+        </MV4Card>
+        <MV4Card>
           <Stack gap={'md'}>
             <Title order={4}>您绑定的游戏账号</Title>
             <Text size={'sm'}>
@@ -299,16 +272,8 @@ export default function UserPage() {
               )}
             </Stack>
           </Stack>
-        </Card>
-        <Card
-          shadow="sm"
-          padding="lg"
-          radius="md"
-          withBorder
-          className={`${eleCss.appShellBg} ${
-            colorScheme === 'light' ? eleCss.appShellBgLight : ''
-          }`}
-        >
+        </MV4Card>
+        <MV4Card>
           <Stack gap={'md'}>
             <Title order={4}>安全设置</Title>
             <Text size={'sm'}>邮箱是您在发生意外时找回账号的唯一手段。</Text>
@@ -339,16 +304,8 @@ export default function UserPage() {
               </Group>
             </Stack>
           </Stack>
-        </Card>
-        <Card
-          shadow="sm"
-          padding="lg"
-          radius="md"
-          withBorder
-          className={`${eleCss.appShellBg} ${
-            colorScheme === 'light' ? eleCss.appShellBgLight : ''
-          }`}
-        >
+        </MV4Card>
+        <MV4Card>
           <Stack gap={'md'}>
             <Title order={4}>FBToken</Title>
             <Stack gap={'sm'}>
@@ -383,16 +340,8 @@ export default function UserPage() {
               </Group>
             </Stack>
           </Stack>
-        </Card>
-        <Card
-          shadow="sm"
-          padding="lg"
-          radius="md"
-          withBorder
-          className={`${eleCss.appShellBg} ${
-            colorScheme === 'light' ? eleCss.appShellBgLight : ''
-          }`}
-        >
+        </MV4Card>
+        <MV4Card>
           <Stack gap={'md'}>
             <Title order={4}>其他</Title>
             <Stack gap={'sm'}>
@@ -407,16 +356,8 @@ export default function UserPage() {
               </Group>
             </Stack>
           </Stack>
-        </Card>
-        <Card
-          shadow="sm"
-          padding="lg"
-          radius="md"
-          withBorder
-          className={`${eleCss.appShellBg} ${
-            colorScheme === 'light' ? eleCss.appShellBgLight : ''
-          }`}
-        >
+        </MV4Card>
+        <MV4Card>
           <Stack gap={'md'}>
             <Title order={4}>危险区域</Title>
             <Stack gap={'sm'}>
@@ -465,7 +406,7 @@ export default function UserPage() {
               </Group>
             </Stack>
           </Stack>
-        </Card>
+        </MV4Card>
       </Stack>
     </Stack>
   );

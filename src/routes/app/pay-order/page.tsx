@@ -1,26 +1,16 @@
-import {
-  Box,
-  Button,
-  Card,
-  Group,
-  Stack,
-  Text,
-  Title,
-  useMantineColorScheme,
-} from '@mantine/core';
+import { Box, Button, Card, Group, Stack, Text, Title } from '@mantine/core';
 import { QRCodeSVG } from 'qrcode.react';
 import { useEffect, useState } from 'react';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import PageTitle from '@/ui/component/app/PageTitle';
-import eleCss from '@/ui/css/elements.module.css';
 import { MV4Order, MV4OrderStatusEnum } from '@/api/order';
 import { formatTime } from '@/utils/timeUtils';
 import { MV4RequestError } from '@/api/base';
 import { mv4RequestApi } from '@/api/mv4Client';
+import MV4Card from '@/ui/component/app/MV4Card';
 
 export default function ManagePage() {
-  const { colorScheme } = useMantineColorScheme();
   const [showLoading, setShowLoading] = useState(true);
   const [showConfirmByUserBtn, setShowConfirmByUserBtn] = useState(false);
   const [order, setOrder] = useState<MV4Order>({
@@ -130,34 +120,18 @@ export default function ManagePage() {
       <PageTitle>支付订单</PageTitle>
       <Stack gap={'sm'}>
         {showLoading && (
-          <Card
-            shadow="sm"
-            padding="lg"
-            radius="md"
-            withBorder
-            className={`${eleCss.appShellBg} ${
-              colorScheme === 'light' ? eleCss.appShellBgLight : ''
-            }`}
-          >
+          <MV4Card>
             <Stack gap={'md'}>
               <Title order={4}>订单信息</Title>
               <Text size={'sm'} fs={'italic'}>
                 正在加载。。。
               </Text>
             </Stack>
-          </Card>
+          </MV4Card>
         )}
         {!showLoading && (
           <Stack gap={'sm'}>
-            <Card
-              shadow="sm"
-              padding="lg"
-              radius="md"
-              withBorder
-              className={`${eleCss.appShellBg} ${
-                colorScheme === 'light' ? eleCss.appShellBgLight : ''
-              }`}
-            >
+            <MV4Card>
               <Stack gap={'md'} align="center">
                 <Group>
                   <Card>
@@ -191,16 +165,8 @@ export default function ManagePage() {
                   </Button>
                 )}
               </Stack>
-            </Card>
-            <Card
-              shadow="sm"
-              padding="lg"
-              radius="md"
-              withBorder
-              className={`${eleCss.appShellBg} ${
-                colorScheme === 'light' ? eleCss.appShellBgLight : ''
-              }`}
-            >
+            </MV4Card>
+            <MV4Card>
               <Stack gap={'md'}>
                 <Title order={4}>订单信息</Title>
                 <Stack gap="xs">
@@ -242,7 +208,7 @@ export default function ManagePage() {
                   </Text>
                 </Stack>
               </Stack>
-            </Card>
+            </MV4Card>
           </Stack>
         )}
       </Stack>

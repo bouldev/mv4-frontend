@@ -1,6 +1,5 @@
 import {
   Button,
-  Card,
   Checkbox,
   Divider,
   Group,
@@ -9,14 +8,12 @@ import {
   Text,
   TextInput,
   Title,
-  useMantineColorScheme,
 } from '@mantine/core';
 import { useState } from 'react';
 import PageTitle from '@/ui/component/app/PageTitle';
-import eleCss from '@/ui/css/elements.module.css';
+import MV4Card from '@/ui/component/app/MV4Card';
 
 export default function ManagePage() {
-  const { colorScheme } = useMantineColorScheme();
   const [filterAdminChecked, setFilterAdminChecked] = useState(false);
   const [filterBalanceChecked, setFilterBalanceChecked] = useState(false);
 
@@ -51,15 +48,7 @@ export default function ManagePage() {
     <Stack>
       <PageTitle>用户管理</PageTitle>
       <Stack gap={'sm'}>
-        <Card
-          shadow="sm"
-          padding="lg"
-          radius="md"
-          withBorder
-          className={`${eleCss.appShellBg} ${
-            colorScheme === 'light' ? eleCss.appShellBgLight : ''
-          }`}
-        >
+        <MV4Card>
           <Stack gap={'md'}>
             <Title order={4}>用户列表 (TODO)</Title>
             <Table highlightOnHover withTableBorder>
@@ -111,7 +100,7 @@ export default function ManagePage() {
               </Group>
             </Stack>
           </Stack>
-        </Card>
+        </MV4Card>
       </Stack>
     </Stack>
   );

@@ -1,19 +1,9 @@
-import {
-  Anchor,
-  Card,
-  ScrollArea,
-  Stack,
-  Text,
-  Title,
-  useMantineColorScheme,
-} from '@mantine/core';
+import { Anchor, ScrollArea, Stack, Text, Title } from '@mantine/core';
 import { CodeHighlight } from '@mantine/code-highlight';
 import PageTitle from '@/ui/component/app/PageTitle';
-import eleCss from '@/ui/css/elements.module.css';
+import MV4Card from '@/ui/component/app/MV4Card';
 
 export default function DownloadPage() {
-  const { colorScheme } = useMantineColorScheme();
-
   const buildShellCode = `git clone git@github.com:bouldev/PhoenixBuilder.git
 cd PhoenixBuilder
 make current
@@ -28,15 +18,7 @@ make current
   return (
     <Stack>
       <PageTitle>下载</PageTitle>
-      <Card
-        shadow="sm"
-        padding="lg"
-        radius="md"
-        withBorder
-        className={`${eleCss.appShellBg} ${
-          colorScheme === 'light' ? eleCss.appShellBgLight : ''
-        }`}
-      >
+      <MV4Card>
         <Stack gap={'md'}>
           <Title order={4}>使用安装脚本</Title>
           <Text size="sm">
@@ -48,16 +30,8 @@ make current
             </ScrollArea>
           </Stack>
         </Stack>
-      </Card>
-      <Card
-        shadow="sm"
-        padding="lg"
-        radius="md"
-        withBorder
-        className={`${eleCss.appShellBg} ${
-          colorScheme === 'light' ? eleCss.appShellBgLight : ''
-        }`}
-      >
+      </MV4Card>
+      <MV4Card>
         <Stack gap={'md'}>
           <Title order={4}>从源码构建</Title>
           <Stack gap={'xs'}>
@@ -66,16 +40,8 @@ make current
             </ScrollArea>
           </Stack>
         </Stack>
-      </Card>
-      <Card
-        shadow="sm"
-        padding="lg"
-        radius="md"
-        withBorder
-        className={`${eleCss.appShellBg} ${
-          colorScheme === 'light' ? eleCss.appShellBgLight : ''
-        }`}
-      >
+      </MV4Card>
+      <MV4Card>
         <Stack gap={'md'}>
           <Title order={4}>下载预构建版本</Title>
           <Stack gap={'xs'}>
@@ -95,7 +61,7 @@ make current
             </Text>
           </Stack>
         </Stack>
-      </Card>
+      </MV4Card>
     </Stack>
   );
 }

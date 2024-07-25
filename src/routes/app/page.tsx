@@ -1,12 +1,10 @@
 import {
-  Card,
   Flex,
   Pagination,
   Text,
   Stack,
   Title,
   Divider,
-  useMantineColorScheme,
   LoadingOverlay,
   Anchor,
   Group,
@@ -15,17 +13,15 @@ import { useEffect, useState } from 'react';
 import { notifications } from '@mantine/notifications';
 import { useModel } from '@modern-js/runtime/model';
 import { modals } from '@mantine/modals';
-import eleCss from '@/ui/css/elements.module.css';
 import PageTitle from '@/ui/component/app/PageTitle';
 import { Announcement } from '@/api/announcement';
 import { mv4RequestApi } from '@/api/mv4Client';
 import { MV4RequestError } from '@/api/base';
 import { GlobalUserModel } from '@/model/globalUserModel';
 import { MV4UserPermissionLevel } from '@/api/user';
+import MV4Card from '@/ui/component/app/MV4Card';
 
 export default function AnnouncementPage() {
-  const { colorScheme } = useMantineColorScheme();
-
   const [activePage, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [currentList, setCurrentList] = useState<Announcement[]>([
@@ -160,16 +156,7 @@ export default function AnnouncementPage() {
         />
         <Stack gap={'md'}>
           {currentList.map((item, i) => (
-            <Card
-              key={item.uniqueId}
-              shadow="sm"
-              padding="lg"
-              radius="md"
-              withBorder
-              className={`${eleCss.appShellBg} ${
-                colorScheme === 'light' ? eleCss.appShellBgLight : ''
-              }`}
-            >
+            <MV4Card key={item.uniqueId}>
               <Title order={5}>{item.title}</Title>
               <Text size="sm" c="dimmed">
                 Author: {item.author}
@@ -250,7 +237,7 @@ export default function AnnouncementPage() {
                   </Anchor>
                 ) : null}
               </Group>
-            </Card>
+            </MV4Card>
           ))}
         </Stack>
         <Flex justify={'center'}>
