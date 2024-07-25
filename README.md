@@ -1,5 +1,8 @@
 # mv4-frontend
 
+FastBuilder UserCenter Next (mv4) front-end.  
+Using React, Modern.js, MantineUI, and hard work.
+
 ## Setup
 
 Install the dependencies:
@@ -34,4 +37,4 @@ Preview the production build locally:
 yarn serve
 ```
 
-For more information, see the [Modern.js documentation](https://modernjs.dev/en).
+For more Modern.js information, see the [Modern.js documentation](https://modernjs.dev/en).
