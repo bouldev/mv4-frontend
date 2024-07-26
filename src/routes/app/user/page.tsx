@@ -211,13 +211,13 @@ export default function UserPage() {
               <Text>
                 产品有效期：{productExpireDateToString(userModelState.user)}
               </Text>
-              {showMore ? (
-                <>
-                  {userModelState.user.balance > 0 ? (
-                    <Text>余额：{userModelState.user.balance}</Text>
-                  ) : null}
-                  <Text>FBCoins：{userModelState.user.fbCoins}</Text>
-                </>
+              <Text>
+                FBCoin：{showMore ? userModelState.user.fbCoins : '***'}
+              </Text>
+              {userModelState.user.balance > 0 ? (
+                <Text>
+                  余额：{showMore ? userModelState.user.balance : '***'}
+                </Text>
               ) : null}
               <Group gap={'sm'}>
                 <Button

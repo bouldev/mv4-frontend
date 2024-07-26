@@ -169,7 +169,9 @@ export default function HelperBotCard() {
       closeOnClickOutside: false,
       children: (
         <Stack>
-          <Text size="sm">注意：只支持网易邮箱账号。</Text>
+          <Text size="sm">
+            我们不推荐使用该登录方式，并且只支持网易邮箱账号。
+          </Text>
           <TextInput
             label="账号"
             leftSection={<User />}
@@ -453,7 +455,7 @@ export default function HelperBotCard() {
                   <Text span>
                     (Lv.
                     {helperBotState.level > 0
-                      ? `${helperBotState.level} (${helperBotState.exp}/${helperBotState.need_exp})`
+                      ? `${helperBotState.level}丨${helperBotState.exp}/${helperBotState.need_exp}`
                       : '-'}
                     )
                   </Text>
