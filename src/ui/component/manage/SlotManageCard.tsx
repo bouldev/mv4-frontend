@@ -64,13 +64,13 @@ export default function SlotManageCard() {
   async function onClickInitThisSlot(thisSlot: ServerSlot, index: number) {
     currentInitInput.current = '';
     modals.open({
-      title: `初始化槽位`,
+      title: `初始化卡槽`,
       closeOnEscape: false,
       closeOnClickOutside: false,
       children: (
         <Stack>
           <Text size="sm">
-            槽位类型：{getDurationChineseString(thisSlot.slotTime)}{' '}
+            卡槽类型：{getDurationChineseString(thisSlot.slotTime)}{' '}
             {thisSlot.dataType === ServerSlotDataType.PLAYER_ID_SLOT &&
               '游戏账号 SLOT'}
             {thisSlot.dataType === ServerSlotDataType.SERVER_ID_SLOT &&
@@ -310,7 +310,7 @@ export default function SlotManageCard() {
       children: (
         <Stack>
           <Text size="sm">
-            槽位类型：{getDurationChineseString(thisSlot.slotTime)}{' '}
+            卡槽类型：{getDurationChineseString(thisSlot.slotTime)}{' '}
             {thisSlot.dataType === ServerSlotDataType.PLAYER_ID_SLOT &&
               '游戏账号 SLOT'}
             {thisSlot.dataType === ServerSlotDataType.SERVER_ID_SLOT &&
