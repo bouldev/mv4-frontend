@@ -164,7 +164,7 @@ export default function AnnouncementPage() {
               <Text size="sm" c="dimmed">
                 Date: {item.date}
               </Text>
-              <Divider my="md" />
+              <Divider mt="xs" />
               <Text
                 size="sm"
                 c="dimmed"

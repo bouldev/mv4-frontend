@@ -1,7 +1,6 @@
 import {
   Button,
   Checkbox,
-  Divider,
   Group,
   Stack,
   Table,
@@ -50,7 +49,29 @@ export default function ManagePage() {
       <Stack gap={'sm'}>
         <MV4Card>
           <Stack gap={'md'}>
-            <Title order={4}>用户列表 (TODO)</Title>
+            <Title order={4}>用户列表</Title>
+            <Group align="end">
+              <TextInput label="Username" />
+              <Group gap="xs">
+                <Text>ADMIN</Text>
+                <Checkbox
+                  checked={filterAdminChecked}
+                  onChange={event => {
+                    setFilterAdminChecked(event.currentTarget.checked);
+                  }}
+                />
+              </Group>
+              <Group gap="xs">
+                <Text>Balance != 0</Text>
+                <Checkbox
+                  checked={filterBalanceChecked}
+                  onChange={event => {
+                    setFilterBalanceChecked(event.currentTarget.checked);
+                  }}
+                />
+              </Group>
+              <Button size="sm">OK</Button>
+            </Group>
             <Table highlightOnHover withTableBorder>
               <Table.Thead>
                 <Table.Tr>
@@ -73,32 +94,6 @@ export default function ManagePage() {
                 ))}
               </Table.Tbody>
             </Table>
-            <Divider my="xs" />
-            <Stack gap="xs">
-              <Title order={5}>Filter</Title>
-              <Group align="end">
-                <TextInput label="Username" />
-                <Group gap="xs">
-                  <Text>ADMIN</Text>
-                  <Checkbox
-                    checked={filterAdminChecked}
-                    onChange={event => {
-                      setFilterAdminChecked(event.currentTarget.checked);
-                    }}
-                  />
-                </Group>
-                <Group gap="xs">
-                  <Text>Balance != 0</Text>
-                  <Checkbox
-                    checked={filterBalanceChecked}
-                    onChange={event => {
-                      setFilterBalanceChecked(event.currentTarget.checked);
-                    }}
-                  />
-                </Group>
-                <Button size="sm">OK</Button>
-              </Group>
-            </Stack>
           </Stack>
         </MV4Card>
       </Stack>

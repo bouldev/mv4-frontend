@@ -1,6 +1,5 @@
 import {
   Button,
-  Divider,
   Group,
   LoadingOverlay,
   Stack,
@@ -68,6 +67,19 @@ export default function OrderPage() {
           />
           <Stack gap={'md'}>
             <Title order={4}>订单列表 (limit=30)</Title>
+            <Group align="end">
+              <TextInput
+                label="Username"
+                value={usernameInput}
+                onChange={e => setUsernameInput(e.currentTarget.value)}
+              />
+              <Button size="sm" onClick={() => setUsernameInput('')}>
+                CLEAN
+              </Button>
+              <Button size="sm" onClick={() => filterOrders(usernameInput)}>
+                OK
+              </Button>
+            </Group>
             <Table highlightOnHover withTableBorder>
               <Table.Thead>
                 <Table.Tr>
@@ -148,23 +160,6 @@ export default function OrderPage() {
                 ))}
               </Table.Tbody>
             </Table>
-            <Divider my="xs" />
-            <Stack gap="xs">
-              <Title order={5}>Filter</Title>
-              <Group align="end">
-                <TextInput
-                  label="Username"
-                  value={usernameInput}
-                  onChange={e => setUsernameInput(e.currentTarget.value)}
-                />
-                <Button size="sm" onClick={() => setUsernameInput('')}>
-                  CLEAN
-                </Button>
-                <Button size="sm" onClick={() => filterOrders(usernameInput)}>
-                  OK
-                </Button>
-              </Group>
-            </Stack>
           </Stack>
         </MV4Card>
       </Stack>

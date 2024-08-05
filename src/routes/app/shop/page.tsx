@@ -124,14 +124,40 @@ export default function ShopPage() {
             onClick={async () => {
               modals.closeAll();
               try {
-                await mv4RequestApi({
-                  path: '/redeem-code/use',
+                const ret = await mv4RequestApi<any, { name: string }>({
+                  path: '/redeem-code/get-status',
                   data: {
                     code: currentRedeemCode.current,
                   },
                 });
-                notifications.show({
-                  message: '成功使用兑换码',
+                modals.openConfirmModal({
+                  title: '确定使用该兑换码吗？',
+                  children: (
+                    <Text size="sm">该兑换码可兑换：{ret.data.name}</Text>
+                  ),
+                  labels: { confirm: '确定', cancel: '取消' },
+                  onConfirm: async () => {
+                    try {
+                      await mv4RequestApi({
+                        path: '/redeem-code/use',
+                        data: {
+                          code: currentRedeemCode.current,
+                        },
+                      });
+                      notifications.show({
+                        message: '成功使用兑换码',
+                      });
+                    } catch (e) {
+                      console.error(e);
+                      if (e instanceof MV4RequestError || e instanceof Error) {
+                        notifications.show({
+                          title: '兑换码使用失败',
+                          message: e.message,
+                          color: 'red',
+                        });
+                      }
+                    }
+                  },
                 });
               } catch (e) {
                 console.error(e);
