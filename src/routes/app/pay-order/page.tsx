@@ -1,4 +1,4 @@
-import { Box, Button, Card, Group, Stack, Text, Title } from '@mantine/core';
+import { Button, Card, Group, Space, Stack, Text, Title } from '@mantine/core';
 import { QRCodeSVG } from 'qrcode.react';
 import { useEffect, useState } from 'react';
 import { modals } from '@mantine/modals';
@@ -42,12 +42,15 @@ export default function ManagePage() {
   }
 
   function showModal(reason: string) {
+    const params = new URLSearchParams(window.location.search);
     modals.open({
       title: '提示',
       children: (
-        <Box>
+        <Stack>
           <Text>{reason}</Text>
-        </Box>
+          <Space />
+          <Text>订单号：{params.get('orderNo') as string}</Text>
+        </Stack>
       ),
       onClose: () => {
         window.location.href = '/app';

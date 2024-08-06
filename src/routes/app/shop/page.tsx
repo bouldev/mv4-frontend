@@ -115,6 +115,7 @@ export default function ShopPage() {
         <Stack>
           <TextInput
             label="兑换码"
+            placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
             onChange={e => {
               currentRedeemCode.current = e.currentTarget.value;
             }}
