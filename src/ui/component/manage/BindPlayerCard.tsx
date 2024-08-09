@@ -26,11 +26,13 @@ export default function BindPlayerCard() {
 
   useEffect(() => {
     async function init() {
-      try {
-        await getBindPlayerInfo();
-      } catch (e) {
-        console.error(e);
-      }
+      setTimeout(async () => {
+        try {
+          await getBindPlayerInfo();
+        } catch (e) {
+          console.error(e);
+        }
+      }, 1000);
     }
     init();
   }, []);
@@ -65,7 +67,7 @@ export default function BindPlayerCard() {
   async function onClickBindPlayer() {
     currentPlayerNameInput.current = '';
     modals.open({
-      title: '绑定游戏账号',
+      title: '绑定服主账号',
       closeOnEscape: false,
       closeOnClickOutside: false,
       children: (
@@ -109,14 +111,14 @@ export default function BindPlayerCard() {
                         },
                       });
                       notifications.show({
-                        message: '绑定游戏账号成功',
+                        message: '绑定服主账号成功',
                       });
                       await getBindPlayerInfo();
                     } catch (e) {
                       console.error(e);
                       if (e instanceof MV4RequestError || e instanceof Error) {
                         notifications.show({
-                          title: '绑定游戏账号失败',
+                          title: '绑定服主账号失败',
                           message: e.message,
                           color: 'red',
                         });
@@ -128,7 +130,7 @@ export default function BindPlayerCard() {
                 console.error(e);
                 if (e instanceof MV4RequestError || e instanceof Error) {
                   notifications.show({
-                    title: '绑定游戏账号失败',
+                    title: '绑定服主账号失败',
                     message: e.message,
                     color: 'red',
                   });
@@ -147,22 +149,22 @@ export default function BindPlayerCard() {
   return (
     <MV4Card>
       <Stack gap={'md'}>
-        <Title order={4}>您绑定的游戏账号</Title>
+        <Title order={4}>您绑定的服主账号</Title>
         <Text size={'sm'}>
-          绑定游戏账号后，您将能在
+          绑定服主账号后，您将能在
           <Text span fw={700}>
             订阅有效
           </Text>
           的情况下无限制地使辅助用户进入
           <Text span fw={700}>
-            该游戏账号名下的
+            该服主账号名下的
           </Text>
           租赁服。
         </Text>
         <Stack gap={'sm'}>
           <Alert color="orange" title="注意">
             <Text size={'sm'}>
-              游戏账号属于我们认定所有者租赁服的依据，一旦绑定将不可解绑。
+              服主账号属于我们认定所有者租赁服的依据，一旦绑定将不可解绑。
             </Text>
             <Text size={'sm'}>我们不会受理任何的解绑请求。</Text>
           </Alert>
