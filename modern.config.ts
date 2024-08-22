@@ -17,6 +17,7 @@ export default defineConfig({
       description: 'FastBuilder user center next generation',
     },
     favicon: './src/assets/logo.svg',
+    template: './src/html/template.html',
   },
   tools: {
     postcss: (config, { addPlugins }) => {

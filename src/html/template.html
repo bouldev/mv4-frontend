@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head></head>
+<body>
+<div id="<%= mountId %>">
+  <style>
+      body {
+          margin: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 100vh;
+      }
+
+      .loader-container {
+          text-align: center;
+      }
+
+      .loader {
+          border: 5px solid #f3f3f3;
+          border-top: 5px solid #228be6;
+          border-radius: 50%;
+          width: 50px;
+          height: 50px;
+          animation: spin 1s linear infinite;
+          margin: 20px auto;
+      }
+
+      @keyframes spin {
+          0% {
+              transform: rotate(0deg);
+          }
+          100% {
+              transform: rotate(360deg);
+          }
+      }
+
+      p {
+          font-family: Arial, sans-serif;
+          color: #333;
+          font-size: 16px;
+          margin-top: 50px;
+      }
+
+      .loading-title {
+          font-size: 1.1rem;
+      }
+
+      .loading-sub-title {
+          margin-top: 20px;
+          font-size: 1rem;
+          color: #888;
+      }
+  </style>
+  <div class="loader-container">
+    <noscript>JavaScript 已被禁用，无法加载页面。</noscript>
+    <div class="loader"></div>
+    <div class="loading-title">
+      正在加载资源
+    </div>
+    <div class="loading-sub-title">
+      初次加载资源可能需要较多时间 请耐心等待
+    </div>
+  </div>
+</div>
+</body>
+</html>
