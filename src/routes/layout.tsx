@@ -17,12 +17,20 @@ import ReactGA from 'react-ga4';
 import { Notifications } from '@mantine/notifications';
 import { useEffect } from 'react';
 import { useModel } from '@modern-js/runtime/model';
+import DisableDevTool from 'disable-devtool';
+import { Watermark } from '@pansy/react-watermark';
 import { DefaultFBGreen } from '@/ui/themes/colors';
 import { GlobalUserModel } from '@/model/globalUserModel';
 import PendingLoadPage from '@/routes/pendingLoadPage';
 import { ThemeSwitchModel } from '@/model/UIModel';
 
 ReactGA.initialize('G-C15VXR93XX');
+
+if (process.env.NODE_ENV !== 'development') {
+  DisableDevTool({
+    md5: '046075e35e84142df39698dcf552a8a0',
+  });
+}
 
 export default function Layout() {
   const theme = createTheme({
@@ -98,6 +106,12 @@ export default function Layout() {
   return (
     <MantineProvider theme={theme} colorSchemeManager={colorSchemeManager}>
       <ModalsProvider>
+        <Watermark
+          isBody
+          text={userModelState.wm}
+          opacity={8e-3}
+          fontWeight={400}
+        />
         {userModelState.loaded ? <Outlet /> : <PendingLoadPage />}
       </ModalsProvider>
       <Notifications />

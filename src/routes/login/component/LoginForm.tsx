@@ -108,7 +108,7 @@ export default function LoginForm({
         visible={showLoading}
         overlayProps={{ radius: 'sm', blur: 2 }}
       />
-      <Title order={4}>登录到 FBUC Next</Title>
+      <Title order={4}>登录到 FastBuilder 用户中心</Title>
       <form
         onSubmit={form.onSubmit(values => onSubmit(values))}
         onInput={() => {

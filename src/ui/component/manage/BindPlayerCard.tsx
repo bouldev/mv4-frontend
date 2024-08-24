@@ -32,7 +32,7 @@ export default function BindPlayerCard() {
         } catch (e) {
           console.error(e);
         }
-      }, 1000);
+      }, 500);
     }
     init();
   }, []);

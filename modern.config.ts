@@ -12,7 +12,7 @@ export default defineConfig({
     disableSourceMap: process.env.NODE_ENV === 'production',
   },
   html: {
-    title: 'FBUC Next',
+    title: 'FastBuilder 用户中心',
     meta: {
       description: 'FastBuilder user center next generation',
     },
