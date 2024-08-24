@@ -11,14 +11,14 @@ import {
   Title,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import Turnstile from 'react-turnstile';
+// import Turnstile from 'react-turnstile';
 import { useState } from 'react';
 import { Caution, Key, Mail, SendEmail } from '@icon-park/react';
 import { modals } from '@mantine/modals';
 import { useNavigate } from '@modern-js/runtime/router';
 import SHA256 from 'crypto-js/sha256';
 import css from '@/routes/login/page.module.css';
-import { MV4_CLOUDFLARE_TURNSTILE_SITE_KEY } from '@/MV4GlobalConfig';
+// import { MV4_CLOUDFLARE_TURNSTILE_SITE_KEY } from '@/MV4GlobalConfig';
 import { mv4RequestApi } from '@/api/mv4Client';
 import { MV4RequestError } from '@/api/base';
 
@@ -28,7 +28,7 @@ export default function BindEmailForm() {
     initialValues: {
       email: '',
       password: '',
-      cf_captcha: '',
+      // cf_captcha: '',
     },
 
     validate: {
@@ -58,6 +58,7 @@ export default function BindEmailForm() {
       form.setFieldError('password', '密码太长');
       return;
     }
+    /*
     if (values.cf_captcha.length === 0) {
       setErrReason(
         '请先完成 Cloudflare 验证码。若仍然收到此提示，请刷新页面。',
@@ -65,6 +66,7 @@ export default function BindEmailForm() {
       setHasErr(true);
       return;
     }
+    */
     setShowLoading(true);
     try {
       await mv4RequestApi({
@@ -72,7 +74,7 @@ export default function BindEmailForm() {
         data: {
           email: values.email,
           password: SHA256(values.password).toString(),
-          cf_captcha: values.cf_captcha,
+          // cf_captcha: values.cf_captcha,
         },
       });
       modals.open({
@@ -147,14 +149,14 @@ export default function BindEmailForm() {
             key={form.key('password')}
             {...form.getInputProps('password', { type: 'input' })}
           />
-          <Turnstile
+          {/* <Turnstile
             sitekey={MV4_CLOUDFLARE_TURNSTILE_SITE_KEY}
             className={css.loginCaptcha}
             action={'bind_email'}
             onVerify={token => {
               form.setFieldValue('cf_captcha', token);
             }}
-          />
+          /> */}
           <Flex justify={'space-between'} align={'center'}>
             <Anchor
               type={'button'}
