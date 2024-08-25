@@ -108,9 +108,11 @@ export default function Layout() {
       <ModalsProvider>
         <Watermark
           isBody
-          text={userModelState.wm}
-          opacity={8e-3}
+          text={''}
+          blindText={userModelState.wm}
           fontWeight={400}
+          fontSize={19}
+          rotate={-15}
         />
         {userModelState.loaded ? <Outlet /> : <PendingLoadPage />}
       </ModalsProvider>
