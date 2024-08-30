@@ -26,6 +26,12 @@ export default function BindPlayerCard() {
 
   useEffect(() => {
     async function init() {
+      try {
+        await getBindPlayerInfo();
+      } catch (e) {
+        console.error(e);
+      }
+      /*
       setTimeout(async () => {
         try {
           await getBindPlayerInfo();
@@ -33,6 +39,7 @@ export default function BindPlayerCard() {
           console.error(e);
         }
       }, 500);
+      */
     }
     init();
   }, []);

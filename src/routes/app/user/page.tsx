@@ -17,6 +17,7 @@ import { mv4RequestApi } from '@/api/mv4Client';
 import { downloadBlobText } from '@/utils/blobUtils';
 import MV4Card from '@/ui/component/app/MV4Card';
 import MV4WaterMark from '@/ui/component/MV4WaterMark';
+import BindPlayerCard from '@/ui/component/manage/BindPlayerCard';
 
 export default function UserPage() {
   const [userModelState, userModelActions] = useModel(GlobalUserModel);
@@ -105,6 +106,7 @@ export default function UserPage() {
             </Stack>
           </Stack>
         </MV4Card>
+        <BindPlayerCard />
         <MV4Card>
           <Stack gap={'md'}>
             <Title order={4}>安全设置</Title>
