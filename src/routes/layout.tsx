@@ -18,7 +18,6 @@ import { Notifications } from '@mantine/notifications';
 import { useEffect } from 'react';
 import { useModel } from '@modern-js/runtime/model';
 import DisableDevTool from 'disable-devtool';
-import { Watermark } from '@pansy/react-watermark';
 import { DefaultFBGreen } from '@/ui/themes/colors';
 import { GlobalUserModel } from '@/model/globalUserModel';
 import PendingLoadPage from '@/routes/pendingLoadPage';
@@ -51,6 +50,10 @@ export default function Layout() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [themeState, themeActions] = useModel(ThemeSwitchModel);
   const navigate = useNavigate();
+
+  const colorSchemeManager = localStorageColorSchemeManager({
+    key: 'mv4ColorScheme',
+  });
 
   useEffect(() => {
     themeActions.loadTheme();
@@ -99,21 +102,9 @@ export default function Layout() {
     init();
   }, []);
 
-  const colorSchemeManager = localStorageColorSchemeManager({
-    key: 'mv4ColorScheme',
-  });
-
   return (
     <MantineProvider theme={theme} colorSchemeManager={colorSchemeManager}>
       <ModalsProvider>
-        <Watermark
-          isBody
-          text={''}
-          blindText={userModelState.wm}
-          fontWeight={400}
-          fontSize={19}
-          rotate={-15}
-        />
         {userModelState.loaded ? <Outlet /> : <PendingLoadPage />}
       </ModalsProvider>
       <Notifications />

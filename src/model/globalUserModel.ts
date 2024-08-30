@@ -2,6 +2,7 @@ import { model } from '@modern-js/runtime/model';
 import { MV4UserInfo } from '@/api/user';
 import { mv4RequestApi } from '@/api/mv4Client';
 import { MV4RequestError } from '@/api/base';
+import { formatTime, nowUnix } from '@/utils/timeUtils';
 
 export interface GlobalUserModelInterface {
   loaded: boolean;
@@ -9,7 +10,7 @@ export interface GlobalUserModelInterface {
   error: boolean;
   errMsg: string;
   user: MV4UserInfo;
-  wm: string;
+  wm: string[];
 }
 
 export const GlobalUserModel = model<GlobalUserModelInterface>(
@@ -30,7 +31,7 @@ export const GlobalUserModel = model<GlobalUserModelInterface>(
       planExpire: 0,
       isLifetimePlan: false,
     },
-    wm: 'Loading...',
+    wm: [''],
   },
   actions: {
     init: {
@@ -38,9 +39,10 @@ export const GlobalUserModel = model<GlobalUserModelInterface>(
         state.loaded = true;
         state.loggedIn = true;
         state.user = value.user;
-        state.wm = `${value.user.username}${
-          value.user.isLifetimePlan ? ' [L]' : ''
-        }`;
+        state.wm = [
+          (value.user as MV4UserInfo).username,
+          formatTime(nowUnix(), true),
+        ];
       },
       rejected: (state, error) => {
         state.loaded = true;
@@ -59,9 +61,10 @@ export const GlobalUserModel = model<GlobalUserModelInterface>(
       fulfilled: (state, value) => {
         state.user = value.user;
         state.loggedIn = true;
-        state.wm = `${value.user.username}${
-          value.user.isLifetimePlan ? ' [L]' : ''
-        }`;
+        state.wm = [
+          (value.user as MV4UserInfo).username,
+          formatTime(nowUnix(), true),
+        ];
       },
       rejected: (state, error) => {
         state.error = true;

@@ -15,6 +15,7 @@ import { mv4RequestApi } from '@/api/mv4Client';
 import { MV4RequestError } from '@/api/base';
 import { formatTime } from '@/utils/timeUtils';
 import MV4Card from '@/ui/component/app/MV4Card';
+import MV4WaterMark from '@/ui/component/MV4WaterMark';
 
 export default function ManagePage() {
   const currentRedeemCode = useRef('');
@@ -156,6 +157,7 @@ export default function ManagePage() {
 
   return (
     <Stack>
+      <MV4WaterMark force={true} />
       <PageTitle>收银台</PageTitle>
       <Stack gap={'sm'}>
         <MV4Card>
