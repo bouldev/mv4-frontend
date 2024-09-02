@@ -1,5 +1,5 @@
 import { ReactNode, useState } from 'react';
-import { useDisclosure } from '@mantine/hooks';
+import { useDisclosure, useElementSize } from '@mantine/hooks';
 import {
   AppShell,
   Box,
@@ -7,6 +7,7 @@ import {
   Group,
   RemoveScroll,
   ScrollArea,
+  Space,
   Transition,
   useMantineColorScheme,
 } from '@mantine/core';
@@ -33,6 +34,7 @@ export default function MV4AppShell({
     window.location.pathname,
   );
   const navigate = useNavigate();
+  const shellHeaderBarElementSize = useElementSize();
 
   function onNavigatePage(path: string) {
     toggle();
@@ -63,6 +65,7 @@ export default function MV4AppShell({
           className={`${css.appShellBg} ${
             colorScheme === 'light' ? css.appShellBgLight : ''
           }`}
+          ref={shellHeaderBarElementSize.ref}
         >
           <Group h="100%" px="md">
             <Burger
@@ -106,6 +109,7 @@ export default function MV4AppShell({
                 </Box>
               )}
             </Transition>
+            <Space h={shellHeaderBarElementSize.height} />
           </AppShell.Section>
         </AppShell.Main>
       </AppShell>
