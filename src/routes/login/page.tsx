@@ -4,6 +4,7 @@ import {
   Flex,
   Paper,
   RemoveScroll,
+  Stack,
   Text,
   Transition,
   useMantineColorScheme,
@@ -131,7 +132,7 @@ export default function LoginPage() {
 
   return (
     <RemoveScroll>
-      <Box
+      <Stack
         className={`${bgCss.bg} ${bgCss.bgFixer} ${getThemeStyleCssName(
           themeState.style,
         )} ${
@@ -163,6 +164,7 @@ export default function LoginPage() {
           </ActionIcon>
         </Flex>
         <Box className={css.wrapper}>
+          <div id="tac-box" className={css.tacBoxStyles} />
           <Transition mounted={paperOpened} transition="fade-up">
             {styles => (
               <Paper
@@ -171,49 +173,49 @@ export default function LoginPage() {
                   colorScheme === 'light' ? css.loginCardLight : ''
                 }`}
                 shadow="xl"
-                p="xl"
                 withBorder
-                pos="relative"
               >
-                <Transition
-                  mounted={formShowed}
-                  transition="fade"
-                  onExited={() => {
-                    actions.setState(state.pendingNewState);
-                    setFormShowed(true);
-                  }}
-                >
-                  {formStyles => (
-                    <Box style={formStyles}>
-                      {state.state === LoginActionType.LOGIN ? (
-                        <LoginForm switchFunc={setLoginActionType} />
-                      ) : null}
-                      {state.state === LoginActionType.REGISTER ? (
-                        <RegisterForm switchFunc={setLoginActionType} />
-                      ) : null}
-                      {state.state === LoginActionType.FORGOT_PASSWORD ? (
-                        <ForgotPasswordForm switchFunc={setLoginActionType} />
-                      ) : null}
-                      {state.state === LoginActionType.RESET_PASSWORD ? (
-                        <ResetPasswordForm switchFunc={setLoginActionType} />
-                      ) : null}
-                      {state.state === LoginActionType.CHANGE_PASSWORD ? (
-                        <ChangePasswordForm switchFunc={setLoginActionType} />
-                      ) : null}
-                      {state.state === LoginActionType.BIND_EMAIL ? (
-                        <BindEmailForm />
-                      ) : null}
-                      {state.state === LoginActionType.BIND_EMAIL_SUCCESS ? (
-                        <BindEmailSuccessForm />
-                      ) : null}
-                    </Box>
-                  )}
-                </Transition>
+                <Box p="xl">
+                  <Transition
+                    mounted={formShowed}
+                    transition="fade"
+                    onExited={() => {
+                      actions.setState(state.pendingNewState);
+                      setFormShowed(true);
+                    }}
+                  >
+                    {formStyles => (
+                      <Box style={formStyles}>
+                        {state.state === LoginActionType.LOGIN ? (
+                          <LoginForm switchFunc={setLoginActionType} />
+                        ) : null}
+                        {state.state === LoginActionType.REGISTER ? (
+                          <RegisterForm switchFunc={setLoginActionType} />
+                        ) : null}
+                        {state.state === LoginActionType.FORGOT_PASSWORD ? (
+                          <ForgotPasswordForm switchFunc={setLoginActionType} />
+                        ) : null}
+                        {state.state === LoginActionType.RESET_PASSWORD ? (
+                          <ResetPasswordForm switchFunc={setLoginActionType} />
+                        ) : null}
+                        {state.state === LoginActionType.CHANGE_PASSWORD ? (
+                          <ChangePasswordForm switchFunc={setLoginActionType} />
+                        ) : null}
+                        {state.state === LoginActionType.BIND_EMAIL ? (
+                          <BindEmailForm />
+                        ) : null}
+                        {state.state === LoginActionType.BIND_EMAIL_SUCCESS ? (
+                          <BindEmailSuccessForm />
+                        ) : null}
+                      </Box>
+                    )}
+                  </Transition>
+                </Box>
               </Paper>
             )}
           </Transition>
         </Box>
-      </Box>
+      </Stack>
     </RemoveScroll>
   );
 }

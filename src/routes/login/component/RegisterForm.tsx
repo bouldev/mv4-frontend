@@ -143,7 +143,6 @@ export default function RegisterForm({
           direction="column"
           wrap="wrap"
         >
-          <div id="tac-box" className={css.tacBoxStyles} />
           <Alert
             color="red"
             title="操作失败"
