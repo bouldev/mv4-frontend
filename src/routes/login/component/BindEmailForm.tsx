@@ -21,6 +21,7 @@ import css from '@/routes/login/page.module.css';
 // import { MV4_CLOUDFLARE_TURNSTILE_SITE_KEY } from '@/MV4GlobalConfig';
 import { mv4RequestApi } from '@/api/mv4Client';
 import { MV4RequestError } from '@/api/base';
+import initTianAiCaptcha from '@/utils/tianAiCaptcha';
 
 export default function BindEmailForm() {
   const form = useForm({
@@ -67,42 +68,45 @@ export default function BindEmailForm() {
       return;
     }
     */
-    setShowLoading(true);
-    try {
-      await mv4RequestApi({
-        path: '/bind-email/send-email',
-        data: {
-          email: values.email,
-          password: SHA256(values.password).toString(),
-          // cf_captcha: values.cf_captcha,
-        },
-      });
-      modals.open({
-        title: '提示',
-        children: (
-          <Box>
-            <Text>
-              一封验证邮件已发送至您提供的邮箱 {values.email}{' '}
-              ，请及时查看邮件，有效期为5分钟。
-            </Text>
-            <Text>
-              若没有看到邮件，请检查垃圾箱、以及是否拦截了来自
-              no-reply@user.fastbuilder.pro 的邮件。
-            </Text>
-          </Box>
-        ),
-        onClose: () => {
-          navigate('/app/user');
-        },
-      });
-    } catch (e) {
-      if (e instanceof Error || e instanceof MV4RequestError) {
-        setErrReason(e.message);
-        setHasErr(true);
+    initTianAiCaptcha('#tac-box', async token => {
+      setShowLoading(true);
+      try {
+        await mv4RequestApi({
+          path: '/bind-email/send-email',
+          data: {
+            email: values.email,
+            password: SHA256(values.password).toString(),
+            captcha_token: token,
+            // cf_captcha: values.cf_captcha,
+          },
+        });
+        modals.open({
+          title: '提示',
+          children: (
+            <Box>
+              <Text>
+                一封验证邮件已发送至您提供的邮箱 {values.email}{' '}
+                ，请及时查看邮件，有效期为5分钟。
+              </Text>
+              <Text>
+                若没有看到邮件，请检查垃圾箱、以及是否拦截了来自
+                no-reply@user.fastbuilder.pro 的邮件。
+              </Text>
+            </Box>
+          ),
+          onClose: () => {
+            navigate('/app/user');
+          },
+        });
+      } catch (e) {
+        if (e instanceof Error || e instanceof MV4RequestError) {
+          setErrReason(e.message);
+          setHasErr(true);
+        }
       }
-    }
-    setShowLoading(false);
-    setBtnEnabled(true);
+      setShowLoading(false);
+      setBtnEnabled(true);
+    });
   }
 
   return (
@@ -124,6 +128,7 @@ export default function BindEmailForm() {
           direction="column"
           wrap="wrap"
         >
+          <div id="tac-box" className={css.tacBoxStyles} />
           <Alert
             color="red"
             title="操作失败"

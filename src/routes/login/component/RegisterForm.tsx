@@ -12,7 +12,7 @@ import {
   Title,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import Turnstile from 'react-turnstile';
+// import Turnstile from 'react-turnstile';
 import { useState } from 'react';
 import { Caution, Check, Key, User } from '@icon-park/react';
 import SHA256 from 'crypto-js/sha256';
@@ -22,9 +22,10 @@ import {
   LoginActionType,
   LoginSwitchStateFunc,
 } from '@/routes/login/model/loginActionTypeSwitchModel';
-import { MV4_CLOUDFLARE_TURNSTILE_SITE_KEY } from '@/MV4GlobalConfig';
+// import { MV4_CLOUDFLARE_TURNSTILE_SITE_KEY } from '@/MV4GlobalConfig';
 import { mv4RequestApi } from '@/api/mv4Client';
 import { MV4RequestError } from '@/api/base';
+import initTianAiCaptcha from '@/utils/tianAiCaptcha';
 
 export default function RegisterForm({
   switchFunc,
@@ -37,7 +38,7 @@ export default function RegisterForm({
       username: '',
       password: '',
       password_again: '',
-      cf_captcha: '',
+      // cf_captcha: '',
       termsOfService: false,
     },
 
@@ -85,6 +86,7 @@ export default function RegisterForm({
       form.setFieldError('password_again', '两次输入的密码不一致');
       return;
     }
+    /*
     if (values.cf_captcha.length === 0) {
       setErrReason(
         '请先完成 Cloudflare 验证码。若仍然收到此提示，请刷新页面。',
@@ -92,30 +94,34 @@ export default function RegisterForm({
       setHasErr(true);
       return;
     }
-    setShowLoading(true);
-    console.log(values);
-    try {
-      await mv4RequestApi({
-        path: '/user/register',
-        data: {
-          username: values.username,
-          password: SHA256(values.password).toString(),
-          cf_captcha: values.cf_captcha,
-        },
-      });
-      notifications.show({
-        title: '提示',
-        message: `注册成功，请登录`,
-      });
-      switchFunc(LoginActionType.LOGIN);
-    } catch (e) {
-      if (e instanceof Error || e instanceof MV4RequestError) {
-        setErrReason(e.message);
-        setHasErr(true);
+    */
+    initTianAiCaptcha('#tac-box', async token => {
+      setShowLoading(true);
+      console.log(values);
+      try {
+        await mv4RequestApi({
+          path: '/user/register',
+          data: {
+            username: values.username,
+            password: SHA256(values.password).toString(),
+            // cf_captcha: values.cf_captcha,
+            captcha_token: token,
+          },
+        });
+        notifications.show({
+          title: '提示',
+          message: `注册成功，请登录`,
+        });
+        switchFunc(LoginActionType.LOGIN);
+      } catch (e) {
+        if (e instanceof Error || e instanceof MV4RequestError) {
+          setErrReason(e.message);
+          setHasErr(true);
+        }
       }
-    }
-    setShowLoading(false);
-    setBtnEnabled(true);
+      setShowLoading(false);
+      setBtnEnabled(true);
+    });
   }
 
   return (
@@ -137,6 +143,7 @@ export default function RegisterForm({
           direction="column"
           wrap="wrap"
         >
+          <div id="tac-box" className={css.tacBoxStyles} />
           <Alert
             color="red"
             title="操作失败"
@@ -197,14 +204,14 @@ export default function RegisterForm({
             key={form.key('termsOfService')}
             {...form.getInputProps('termsOfService', { type: 'checkbox' })}
           />
-          <Turnstile
+          {/* <Turnstile
             sitekey={MV4_CLOUDFLARE_TURNSTILE_SITE_KEY}
             className={css.loginCaptcha}
             action={'register'}
             onVerify={token => {
               form.setFieldValue('cf_captcha', token);
             }}
-          />
+          /> */}
           <Flex justify={'space-between'} align={'center'}>
             <Anchor
               type={'button'}

@@ -8,6 +8,12 @@ export default defineConfig({
     state: true,
   },
   output: {
+    copy: [
+      {
+        from: './src/assets/static',
+        to: 'static',
+      },
+    ],
     charset: 'utf8',
     disableSourceMap: process.env.NODE_ENV === 'production',
   },
@@ -37,6 +43,7 @@ export default defineConfig({
     devServer: {
       proxy: {
         '/api': 'http://localhost:7159',
+        '/captcha-api': 'http://localhost:7169',
       },
     },
   },

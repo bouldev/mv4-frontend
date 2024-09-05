@@ -25,3 +25,10 @@
 .login-captcha {
     @apply w-0
 }
+
+.tac-box-styles {
+    position: absolute;
+    left: calc((400 - 100%) / 2);
+    top: 20px;
+    align-self: center;
+}

@@ -10,7 +10,7 @@ import {
   Title,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import Turnstile from 'react-turnstile';
+// import Turnstile from 'react-turnstile';
 import { useState } from 'react';
 import { Caution, Check, Key } from '@icon-park/react';
 import SHA256 from 'crypto-js/sha256';
@@ -22,10 +22,11 @@ import {
   LoginSwitchStateFunc,
 } from '@/routes/login/model/loginActionTypeSwitchModel';
 import css from '@/routes/login/page.module.css';
-import { MV4_CLOUDFLARE_TURNSTILE_SITE_KEY } from '@/MV4GlobalConfig';
+// import { MV4_CLOUDFLARE_TURNSTILE_SITE_KEY } from '@/MV4GlobalConfig';
 import { mv4RequestApi } from '@/api/mv4Client';
 import { MV4RequestError } from '@/api/base';
 import { GlobalUserModel } from '@/model/globalUserModel';
+import initTianAiCaptcha from '@/utils/tianAiCaptcha';
 
 export default function ChangePasswordForm({
   switchFunc,
@@ -38,7 +39,7 @@ export default function ChangePasswordForm({
       password: '',
       new_password: '',
       new_password_again: '',
-      cf_captcha: '',
+      // cf_captcha: '',
     },
 
     validate: {
@@ -79,6 +80,7 @@ export default function ChangePasswordForm({
       form.setFieldError('password_again', '两次输入的密码不一致');
       return;
     }
+    /*
     if (values.cf_captcha.length === 0) {
       setErrReason(
         '请先完成 Cloudflare 验证码。若仍然收到此提示，请刷新页面。',
@@ -86,36 +88,40 @@ export default function ChangePasswordForm({
       setHasErr(true);
       return;
     }
-    setShowLoading(true);
-    try {
-      await mv4RequestApi({
-        path: '/user/change-password',
-        data: {
-          password: SHA256(values.password).toString(),
-          new_password: SHA256(values.new_password).toString(),
-          cf_captcha: values.cf_captcha,
-        },
-      });
-      modals.open({
-        title: '提示',
-        children: (
-          <Box>
-            <Text>密码修改成功，请使用新密码进行登录。</Text>
-          </Box>
-        ),
-        onClose: async () => {
-          switchFunc(LoginActionType.LOGIN);
-          await userModelActions.update();
-        },
-      });
-    } catch (e) {
-      if (e instanceof Error || e instanceof MV4RequestError) {
-        setErrReason(e.message);
-        setHasErr(true);
+    */
+    initTianAiCaptcha('#tac-box', async token => {
+      setShowLoading(true);
+      try {
+        await mv4RequestApi({
+          path: '/user/change-password',
+          data: {
+            password: SHA256(values.password).toString(),
+            new_password: SHA256(values.new_password).toString(),
+            // cf_captcha: values.cf_captcha,
+            captcha_token: token,
+          },
+        });
+        modals.open({
+          title: '提示',
+          children: (
+            <Box>
+              <Text>密码修改成功，请使用新密码进行登录。</Text>
+            </Box>
+          ),
+          onClose: async () => {
+            switchFunc(LoginActionType.LOGIN);
+            await userModelActions.update();
+          },
+        });
+      } catch (e) {
+        if (e instanceof Error || e instanceof MV4RequestError) {
+          setErrReason(e.message);
+          setHasErr(true);
+        }
       }
-    }
-    setShowLoading(false);
-    setBtnEnabled(true);
+      setShowLoading(false);
+      setBtnEnabled(true);
+    });
   }
 
   return (
@@ -137,6 +143,7 @@ export default function ChangePasswordForm({
           direction="column"
           wrap="wrap"
         >
+          <div id="tac-box" className={css.tacBoxStyles} />
           <Alert
             color="red"
             title="操作失败"
@@ -168,14 +175,14 @@ export default function ChangePasswordForm({
             key={form.key('new_password_again')}
             {...form.getInputProps('new_password_again', { type: 'input' })}
           />
-          <Turnstile
+          {/* <Turnstile
             sitekey={MV4_CLOUDFLARE_TURNSTILE_SITE_KEY}
             className={css.loginCaptcha}
             action={'change_password'}
             onVerify={token => {
               form.setFieldValue('cf_captcha', token);
             }}
-          />
+          /> */}
           <Flex justify={'space-between'} align={'center'}>
             <Anchor
               type={'button'}
