@@ -28,6 +28,7 @@ export default function HelperBotCard() {
     level: number;
     exp: number;
     need_exp: number;
+    enableSkin: boolean;
   }>({
     loaded: false,
     helperBotStatus: HelperBotStatus.NEED_INIT,
@@ -36,6 +37,7 @@ export default function HelperBotCard() {
     level: 0,
     exp: 0,
     need_exp: 0,
+    enableSkin: false,
   });
   const [isPageInit, setIsPageInit] = useState(false);
   const [hasErr, setHasErr] = useState(false);
@@ -54,6 +56,7 @@ export default function HelperBotCard() {
       level: 0,
       exp: 0,
       need_exp: 0,
+      enableSkin: false,
     });
     setHasErr(false);
     try {
@@ -69,6 +72,7 @@ export default function HelperBotCard() {
           level: number;
           exp: number;
           need_exp: number;
+          enableSkin: boolean;
         }
       >({
         path: '/helper-bot/info',
@@ -87,6 +91,7 @@ export default function HelperBotCard() {
         level: ret.data.level,
         exp: ret.data.exp,
         need_exp: ret.data.need_exp,
+        enableSkin: ret.data.enableSkin,
       });
     } catch (e) {
       console.error(e);
@@ -151,6 +156,7 @@ export default function HelperBotCard() {
         level: helperBotState.level,
         exp: helperBotState.exp,
         need_exp: helperBotState.need_exp,
+        enableSkin: helperBotState.enableSkin,
       });
     } catch (e) {
       console.error(e);
@@ -212,6 +218,7 @@ export default function HelperBotCard() {
           status: HelperBotStatus;
           nickname: string;
           dailySigned: boolean;
+          enableSkin: boolean;
         }
       >({
         path: '/helper-bot/setup/login-account',
@@ -237,6 +244,7 @@ export default function HelperBotCard() {
         level: helperBotState.level,
         exp: helperBotState.exp,
         need_exp: helperBotState.need_exp,
+        enableSkin: helperBotState.enableSkin,
       });
       gameAccount.current = '';
       gamePassword.current = '';
@@ -302,6 +310,7 @@ export default function HelperBotCard() {
         level: helperBotState.level,
         exp: helperBotState.exp,
         need_exp: helperBotState.need_exp,
+        enableSkin: helperBotState.enableSkin,
       });
       notifications.show({
         message: '操作成功',
@@ -339,6 +348,7 @@ export default function HelperBotCard() {
               level: number;
               exp: number;
               need_exp: number;
+              enableSkin: boolean;
             }
           >({
             path: '/helper-bot/daily-sign',
@@ -355,6 +365,59 @@ export default function HelperBotCard() {
             level: ret.data.level,
             exp: ret.data.exp,
             need_exp: ret.data.need_exp,
+            enableSkin: ret.data.enableSkin,
+          });
+        } catch (e) {
+          console.error(e);
+          if (e instanceof MV4RequestError || e instanceof Error) {
+            setHasErr(true);
+            setErrReason(e.message);
+          }
+        }
+      },
+    });
+  }
+
+  async function helperBotSwitchEnableSkin(needEnable: boolean) {
+    modals.openConfirmModal({
+      title: `${needEnable ? '启用' : '关闭'}皮肤支持`,
+      children: (
+        <Box>
+          <Text size="sm">
+            若您的辅助用户已在游戏设定使用某个特定的皮肤，启用该支持后，您的辅助用户在游戏内将显示对应皮肤。
+          </Text>
+          <Text size="sm">
+            如果关闭，您的辅助用户在游戏内将显示为史蒂夫/艾莉克斯。
+          </Text>
+          <Text size="sm">
+            一般情况下，您无需开启该开关。启用后有可能会降低您的进服速度。
+          </Text>
+        </Box>
+      ),
+      labels: { confirm: `${needEnable ? '启用' : '关闭'}`, cancel: '取消' },
+      onConfirm: async () => {
+        try {
+          const ret = await mv4RequestApi<
+            any,
+            {
+              enableSkin: boolean;
+            }
+          >({
+            path: '/helper-bot/switch-enable-skin',
+            methodGet: true,
+          });
+          notifications.show({
+            message: '操作成功',
+          });
+          setHelperBotState({
+            loaded: true,
+            helperBotStatus: helperBotState.helperBotStatus,
+            nickname: helperBotState.nickname,
+            dailySigned: helperBotState.dailySigned,
+            level: helperBotState.level,
+            exp: helperBotState.exp,
+            need_exp: helperBotState.need_exp,
+            enableSkin: ret.data.enableSkin,
           });
         } catch (e) {
           console.error(e);
@@ -459,6 +522,9 @@ export default function HelperBotCard() {
                       : '-'}
                     )
                   </Text>
+                  <Text>
+                    皮肤支持：已{helperBotState.enableSkin ? '启用' : '关闭'}
+                  </Text>
                 </Text>
                 <Group gap={'sm'} pt={'sm'}>
                   <Button onClick={refreshHelperBotStatus}>刷新状态</Button>
@@ -469,7 +535,7 @@ export default function HelperBotCard() {
                   >
                     设置昵称
                   </Button>
-                  {helperBotState.nickname && (
+                  {helperBotState.helperBotStatus === HelperBotStatus.OK && (
                     <>
                       {helperBotState.dailySigned ? (
                         <Button disabled>已签到</Button>
@@ -477,6 +543,16 @@ export default function HelperBotCard() {
                         <Button onClick={helperBotDailySign}>签到</Button>
                       )}
                     </>
+                  )}
+                  {helperBotState.helperBotStatus === HelperBotStatus.OK && (
+                    <Button
+                      bg="indigo"
+                      onClick={() =>
+                        helperBotSwitchEnableSkin(!helperBotState.enableSkin)
+                      }
+                    >
+                      {!helperBotState.enableSkin ? '启用' : '关闭'}皮肤支持
+                    </Button>
                   )}
                 </Group>
               </>

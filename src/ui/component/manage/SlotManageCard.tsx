@@ -347,7 +347,7 @@ export default function SlotManageCard() {
         <Title order={4}>您的 SLOT（卡槽）</Title>
         <Box>
           <Text size={'sm'}>
-            除您绑定的游戏账号外，您只能使辅助用户进入以下租赁服/游戏账号名下的租赁服。
+            除您绑定的服主账号外，您只能使辅助用户进入以下租赁服/游戏账号名下的租赁服。
           </Text>
           <Text size={'sm'}>卡槽只会在初始化后开始计算有效期。</Text>
         </Box>
