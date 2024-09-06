@@ -76,41 +76,47 @@ export default function ForgotPasswordForm({
       return;
     }
     */
-    initTianAiCaptcha('#tac-box', async token => {
-      setShowLoading(true);
-      try {
-        await mv4RequestApi({
-          path: '/forgot-password/send-email',
-          data: {
-            username: values.username,
-            email: values.email,
-            // cf_captcha: values.cf_captcha,
-            captcha_token: token,
-          },
-        });
-        modals.open({
-          title: '提示',
-          children: (
-            <Box>
-              <Text>
-                一封重置密码邮件已发送至您绑定的邮箱 {values.email}{' '}
-                ，请及时查看邮件，邮件有效期为5分钟。
-              </Text>
-              <Text>
-                若没有看到邮件，请检查垃圾箱、以及是否拦截了来自
-                no-reply@user.fastbuilder.pro 的邮件。
-              </Text>
-            </Box>
-          ),
-        });
-      } catch (e) {
-        if (e instanceof Error || e instanceof MV4RequestError) {
-          setErrReason(e.message);
-          setHasErr(true);
+    setShowLoading(true);
+    initTianAiCaptcha('#tac-box', {
+      onSuccess: async token => {
+        try {
+          await mv4RequestApi({
+            path: '/forgot-password/send-email',
+            data: {
+              username: values.username,
+              email: values.email,
+              // cf_captcha: values.cf_captcha,
+              captcha_token: token,
+            },
+          });
+          modals.open({
+            title: '提示',
+            children: (
+              <Box>
+                <Text>
+                  一封重置密码邮件已发送至您绑定的邮箱 {values.email}{' '}
+                  ，请及时查看邮件，邮件有效期为5分钟。
+                </Text>
+                <Text>
+                  若没有看到邮件，请检查垃圾箱、以及是否拦截了来自
+                  no-reply@user.fastbuilder.pro 的邮件。
+                </Text>
+              </Box>
+            ),
+          });
+        } catch (e) {
+          if (e instanceof Error || e instanceof MV4RequestError) {
+            setErrReason(e.message);
+            setHasErr(true);
+          }
         }
-      }
-      setShowLoading(false);
-      setBtnEnabled(true);
+        setShowLoading(false);
+        setBtnEnabled(true);
+      },
+      onClickClose: () => {
+        setShowLoading(false);
+        setBtnEnabled(true);
+      },
     });
   }
 

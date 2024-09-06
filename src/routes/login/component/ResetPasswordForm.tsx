@@ -73,41 +73,47 @@ export default function ResetPasswordForm({
       return;
     }
     */
-    initTianAiCaptcha('#tac-box', async token => {
-      setShowLoading(true);
-      const search = new URLSearchParams(window.location.search);
-      try {
-        await mv4RequestApi({
-          path: '/forgot-password/reset-password',
-          data: {
-            username: search.get('username'),
-            new_password: SHA256(values.password).toString(),
-            ticket: search.get('ticket'),
-            // cf_captcha: values.cf_captcha,
-            captcha_token: token,
-          },
-        });
-        modals.open({
-          title: '提示',
-          children: (
-            <Box>
-              <Text>密码重置成功，请使用新密码进行登录。</Text>
-              <Text>日后请注意不要遗失或忘记您的密码。</Text>
-            </Box>
-          ),
-          onClose: () => {
-            window.location.search = '';
-            switchFunc(LoginActionType.LOGIN);
-          },
-        });
-      } catch (e) {
-        if (e instanceof Error || e instanceof MV4RequestError) {
-          setErrReason(e.message);
-          setHasErr(true);
+    setShowLoading(true);
+    initTianAiCaptcha('#tac-box', {
+      onSuccess: async token => {
+        const search = new URLSearchParams(window.location.search);
+        try {
+          await mv4RequestApi({
+            path: '/forgot-password/reset-password',
+            data: {
+              username: search.get('username'),
+              new_password: SHA256(values.password).toString(),
+              ticket: search.get('ticket'),
+              // cf_captcha: values.cf_captcha,
+              captcha_token: token,
+            },
+          });
+          modals.open({
+            title: '提示',
+            children: (
+              <Box>
+                <Text>密码重置成功，请使用新密码进行登录。</Text>
+                <Text>日后请注意不要遗失或忘记您的密码。</Text>
+              </Box>
+            ),
+            onClose: () => {
+              window.location.search = '';
+              switchFunc(LoginActionType.LOGIN);
+            },
+          });
+        } catch (e) {
+          if (e instanceof Error || e instanceof MV4RequestError) {
+            setErrReason(e.message);
+            setHasErr(true);
+          }
         }
-      }
-      setShowLoading(false);
-      setBtnEnabled(true);
+        setShowLoading(false);
+        setBtnEnabled(true);
+      },
+      onClickClose: () => {
+        setShowLoading(false);
+        setBtnEnabled(true);
+      },
     });
   }
 

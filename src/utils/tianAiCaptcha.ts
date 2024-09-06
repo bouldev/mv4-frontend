@@ -4,21 +4,50 @@ declare global {
   }
 }
 
+export interface TianAiCaptchaInitConfig {
+  onSuccess?: (token: string) => any;
+  onFail?: () => any;
+  onClickRefresh?: () => any;
+  onClickClose?: () => any;
+}
+
 export default function initTianAiCaptcha(
   elementId: string,
-  successCallback: (token: string) => any,
+  initConfig: TianAiCaptchaInitConfig,
 ) {
+  /*
   if (process.env.NODE_ENV === 'development') {
     successCallback('1145141919810');
     return;
   }
+  */
   const config = {
     requestCaptchaDataUrl: '/captcha-api/gen',
     validCaptchaUrl: '/captcha-api/check',
     bindEl: elementId,
-    validSuccess: async (res: any, c: any, tac: any) => {
+    validSuccess: (res: any, c: any, tac: any) => {
       tac.destroyWindow();
-      await successCallback(res.data.id);
+      if (initConfig.onSuccess) {
+        initConfig.onSuccess(res.data.id);
+      }
+    },
+    validFail: (res: any, c: any, tac: any) => {
+      tac.reloadCaptcha();
+      if (initConfig.onFail) {
+        initConfig.onFail();
+      }
+    },
+    btnRefreshFun: (el: any, tac: any) => {
+      tac.reloadCaptcha();
+      if (initConfig.onClickRefresh) {
+        initConfig.onClickRefresh();
+      }
+    },
+    btnCloseFun: (el: any, tac: any) => {
+      tac.destroyWindow();
+      if (initConfig.onClickClose) {
+        initConfig.onClickClose();
+      }
     },
   };
   const style = {
@@ -27,7 +56,7 @@ export default function initTianAiCaptcha(
   window
     .initTAC('/static', config, style)
     .then((tac: any) => {
-      tac.init(); // 调用init则显示验证码
+      tac.init();
     })
     .catch((e: any) => {
       console.log('初始化tac失败', e);

@@ -77,7 +77,8 @@ export default function ChangePasswordForm({
       return;
     }
     if (values.new_password !== values.new_password_again) {
-      form.setFieldError('password_again', '两次输入的密码不一致');
+      form.setFieldError('new_password', '两次输入的密码不一致');
+      form.setFieldError('new_password_again', '两次输入的密码不一致');
       return;
     }
     /*
@@ -89,38 +90,44 @@ export default function ChangePasswordForm({
       return;
     }
     */
-    initTianAiCaptcha('#tac-box', async token => {
-      setShowLoading(true);
-      try {
-        await mv4RequestApi({
-          path: '/user/change-password',
-          data: {
-            password: SHA256(values.password).toString(),
-            new_password: SHA256(values.new_password).toString(),
-            // cf_captcha: values.cf_captcha,
-            captcha_token: token,
-          },
-        });
-        modals.open({
-          title: '提示',
-          children: (
-            <Box>
-              <Text>密码修改成功，请使用新密码进行登录。</Text>
-            </Box>
-          ),
-          onClose: async () => {
-            switchFunc(LoginActionType.LOGIN);
-            await userModelActions.update();
-          },
-        });
-      } catch (e) {
-        if (e instanceof Error || e instanceof MV4RequestError) {
-          setErrReason(e.message);
-          setHasErr(true);
+    setShowLoading(true);
+    initTianAiCaptcha('#tac-box', {
+      onSuccess: async token => {
+        try {
+          await mv4RequestApi({
+            path: '/user/change-password',
+            data: {
+              password: SHA256(values.password).toString(),
+              new_password: SHA256(values.new_password).toString(),
+              // cf_captcha: values.cf_captcha,
+              captcha_token: token,
+            },
+          });
+          modals.open({
+            title: '提示',
+            children: (
+              <Box>
+                <Text>密码修改成功，请使用新密码进行登录。</Text>
+              </Box>
+            ),
+            onClose: async () => {
+              switchFunc(LoginActionType.LOGIN);
+              await userModelActions.update();
+            },
+          });
+        } catch (e) {
+          if (e instanceof Error || e instanceof MV4RequestError) {
+            setErrReason(e.message);
+            setHasErr(true);
+          }
         }
-      }
-      setShowLoading(false);
-      setBtnEnabled(true);
+        setShowLoading(false);
+        setBtnEnabled(true);
+      },
+      onClickClose: () => {
+        setShowLoading(false);
+        setBtnEnabled(true);
+      },
     });
   }
 

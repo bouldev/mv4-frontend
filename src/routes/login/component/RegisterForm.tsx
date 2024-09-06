@@ -95,32 +95,38 @@ export default function RegisterForm({
       return;
     }
     */
-    initTianAiCaptcha('#tac-box', async token => {
-      setShowLoading(true);
-      console.log(values);
-      try {
-        await mv4RequestApi({
-          path: '/user/register',
-          data: {
-            username: values.username,
-            password: SHA256(values.password).toString(),
-            // cf_captcha: values.cf_captcha,
-            captcha_token: token,
-          },
-        });
-        notifications.show({
-          title: '提示',
-          message: `注册成功，请登录`,
-        });
-        switchFunc(LoginActionType.LOGIN);
-      } catch (e) {
-        if (e instanceof Error || e instanceof MV4RequestError) {
-          setErrReason(e.message);
-          setHasErr(true);
+    setShowLoading(true);
+    initTianAiCaptcha('#tac-box', {
+      onSuccess: async token => {
+        console.log(values);
+        try {
+          await mv4RequestApi({
+            path: '/user/register',
+            data: {
+              username: values.username,
+              password: SHA256(values.password).toString(),
+              // cf_captcha: values.cf_captcha,
+              captcha_token: token,
+            },
+          });
+          notifications.show({
+            title: '提示',
+            message: `注册成功，请登录`,
+          });
+          switchFunc(LoginActionType.LOGIN);
+        } catch (e) {
+          if (e instanceof Error || e instanceof MV4RequestError) {
+            setErrReason(e.message);
+            setHasErr(true);
+          }
         }
-      }
-      setShowLoading(false);
-      setBtnEnabled(true);
+        setShowLoading(false);
+        setBtnEnabled(true);
+      },
+      onClickClose: () => {
+        setShowLoading(false);
+        setBtnEnabled(true);
+      },
     });
   }
 
