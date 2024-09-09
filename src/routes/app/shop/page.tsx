@@ -99,6 +99,7 @@ export default function ShopPage() {
 
   async function onClickProduct(product: MV4Product) {
     setCurrentProduct(product);
+    setEnableGenerateRedeemCode(false);
     setEnableUseFBCoin(false);
     setEnableSetBuyAmount(false);
     setCurrentSetBuyAmountInput(1);
