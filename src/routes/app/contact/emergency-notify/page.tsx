@@ -85,7 +85,7 @@ export default function EmergencyNotifyPage() {
         <MV4Card>
           <Stack gap={'md'}>
             <Text size={'sm'}>
-              紧急联络仅适用于紧急情况，例如我们的服务出现故障。
+              紧急联络仅适用于紧急情况（例如我们的服务出现故障）。
             </Text>
             <Text size={'sm'} fw={700} c={'red'}>
               若您滥用该功能（例如发送无意义内容），您的账号将会被直接封禁，不可申诉。
