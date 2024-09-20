@@ -1,8 +1,11 @@
 import { Anchor, Stack, Text, Title } from '@mantine/core';
+import { useNavigate } from '@modern-js/runtime/dist/types/router';
 import PageTitle from '@/ui/component/app/PageTitle';
 import MV4Card from '@/ui/component/app/MV4Card';
 
 export default function AboutPage() {
+  const navigate = useNavigate();
+
   return (
     <Stack>
       <PageTitle>关于</PageTitle>
@@ -76,7 +79,10 @@ export default function AboutPage() {
             <Text>
               <Anchor href={'#'}>一般联络（暂未完成）</Anchor>{' '}
               <Anchor
-                href={'http://localhost:8080/app/contact/emergency-notify'}
+                href={'#'}
+                onClick={() => {
+                  navigate('/app/contact/emergency-notify');
+                }}
               >
                 紧急联络
               </Anchor>
