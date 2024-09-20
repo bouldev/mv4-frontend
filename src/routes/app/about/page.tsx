@@ -66,6 +66,24 @@ export default function AboutPage() {
           </Stack>
         </Stack>
       </MV4Card>
+      <MV4Card>
+        <Stack gap={'md'}>
+          <Title order={4}>联络</Title>
+          <Stack gap={'xs'}>
+            <Text>
+              您可以通过下方入口或发送邮件到 admin@boul.dev 与我们联络。
+            </Text>
+            <Text>
+              <Anchor href={'#'}>一般联络（暂未完成）</Anchor>{' '}
+              <Anchor
+                href={'http://localhost:8080/app/contact/emergency-notify'}
+              >
+                紧急联络
+              </Anchor>
+            </Text>
+          </Stack>
+        </Stack>
+      </MV4Card>
     </Stack>
   );
 }
