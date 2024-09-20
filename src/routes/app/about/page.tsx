@@ -1,5 +1,5 @@
 import { Anchor, Stack, Text, Title } from '@mantine/core';
-import { useNavigate } from '@modern-js/runtime/dist/types/router';
+import { useNavigate } from '@modern-js/runtime/router';
 import PageTitle from '@/ui/component/app/PageTitle';
 import MV4Card from '@/ui/component/app/MV4Card';
 
