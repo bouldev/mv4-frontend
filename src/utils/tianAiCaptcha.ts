@@ -9,6 +9,7 @@ export interface TianAiCaptchaInitConfig {
   onFail?: () => any;
   onClickRefresh?: () => any;
   onClickClose?: () => any;
+  onInitialize?: () => any;
 }
 
 export default function initTianAiCaptcha(
@@ -56,6 +57,9 @@ export default function initTianAiCaptcha(
   window
     .initTAC('/static', config, style)
     .then((tac: any) => {
+      if (initConfig.onInitialize) {
+        initConfig.onInitialize();
+      }
       tac.init();
     })
     .catch((e: any) => {

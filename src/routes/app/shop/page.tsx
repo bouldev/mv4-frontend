@@ -29,6 +29,8 @@ import { mv4RequestApi } from '@/api/mv4Client';
 import { GlobalUserModel } from '@/model/globalUserModel';
 import { MV4UserPermissionLevel } from '@/api/user';
 import MV4Card from '@/ui/component/app/MV4Card';
+import initTianAiCaptcha from '@/utils/tianAiCaptcha';
+import { awaitSleep } from '@/utils/asyncUtils';
 
 export default function ShopPage() {
   const { colorScheme } = useMantineColorScheme();
@@ -57,6 +59,8 @@ export default function ShopPage() {
   const [enableGenerateRedeemCode, setEnableGenerateRedeemCode] =
     useState(false);
   const currentRedeemCode = useRef('');
+  const [captchaModalOpened, captchaModalActions] = useDisclosure(false);
+  const [captchaInitSuccess, setCaptchaInitSuccess] = useState(false);
 
   async function refreshShopList() {
     setShowLoading(true);
@@ -139,26 +143,44 @@ export default function ShopPage() {
                   ),
                   labels: { confirm: '确定', cancel: '取消' },
                   onConfirm: async () => {
-                    try {
-                      await mv4RequestApi({
-                        path: '/redeem-code/use',
-                        data: {
-                          code: currentRedeemCode.current,
-                        },
-                      });
-                      notifications.show({
-                        message: '成功使用兑换码',
-                      });
-                    } catch (e) {
-                      console.error(e);
-                      if (e instanceof MV4RequestError || e instanceof Error) {
-                        notifications.show({
-                          title: '兑换码使用失败',
-                          message: e.message,
-                          color: 'red',
-                        });
-                      }
-                    }
+                    setCaptchaInitSuccess(false);
+                    captchaModalActions.open();
+                    await awaitSleep(100);
+                    initTianAiCaptcha('#tac-box-shop', {
+                      onSuccess: async token => {
+                        captchaModalActions.close();
+                        try {
+                          await mv4RequestApi({
+                            path: '/redeem-code/use',
+                            data: {
+                              code: currentRedeemCode.current,
+                              captcha_token: token,
+                            },
+                          });
+                          notifications.show({
+                            message: '成功使用兑换码',
+                          });
+                        } catch (e) {
+                          console.error(e);
+                          if (
+                            e instanceof MV4RequestError ||
+                            e instanceof Error
+                          ) {
+                            notifications.show({
+                              title: '兑换码使用失败',
+                              message: e.message,
+                              color: 'red',
+                            });
+                          }
+                        }
+                      },
+                      onClickClose: () => {
+                        captchaModalActions.close();
+                      },
+                      onInitialize: () => {
+                        setCaptchaInitSuccess(true);
+                      },
+                    });
                   },
                 });
               } catch (e) {
@@ -191,9 +213,20 @@ export default function ShopPage() {
   return (
     <Stack>
       <Modal
+        opened={captchaModalOpened}
+        onClose={captchaModalActions.close}
+        title="请完成验证码"
+        centered={true}
+      >
+        <Stack align="center" justify="center">
+          {!captchaInitSuccess && <Text size="sm">验证码加载中</Text>}
+          <div id="tac-box-shop" />
+        </Stack>
+      </Modal>
+      <Modal
         opened={buyModalOpened}
         onClose={buyModalActions.close}
-        title={<Title order={6}>{currentProduct.name}</Title>}
+        title={currentProduct.name}
       >
         <Stack>
           <Text size="sm">价格：￥ {currentProduct.price}</Text>
