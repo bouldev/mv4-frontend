@@ -7,9 +7,6 @@ export default function DownloadPage() {
   const buildShellCode = `git clone git@github.com:bouldev/PhoenixBuilder.git
 cd PhoenixBuilder
 make current
-# 初次使用在执行完一次 make 后执行下面的命令：
-sed "s/urrentProtocol byte = 11/urrentProtocol byte = 8/g" ~/go/pkg/mod/github.com/sandertv/go-raknet@v1.12.0/conn.go
-make current
 ./build/phoenixbuilder`;
 
   const downloadShellCode =
