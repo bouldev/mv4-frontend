@@ -56,6 +56,9 @@ make current
               <CodeHighlight code={downloadWithProxyShellCode} lang={'sh'} />
             </ScrollArea>
           </Stack>
+          <Text size="sm">
+            安装完毕后，输入“fastbuilder”，按下回车即可启动。
+          </Text>
           <Group gap={'sm'}>
             <Button onClick={() => onClickCopy(downloadShellCode)}>
               复制脚本
