@@ -90,6 +90,30 @@ export default function AboutPage() {
           </Stack>
         </Stack>
       </MV4Card>
+      <MV4Card>
+        <Stack gap={'md'}>
+          <Title order={4}>沟通交流</Title>
+          <Stack gap={'xs'}>
+            <Text>您可以通过下方入口与其他用户进行交流。</Text>
+            <Text>
+              <Anchor
+                target={'_blank'}
+                rel={'noreferrer'}
+                href={'https://pd.qq.com/s/8svbj7li0'}
+              >
+                QQ频道：FastBuilder0
+              </Anchor>{' '}
+              <Anchor
+                target={'_blank'}
+                rel={'noreferrer'}
+                href={'https://qm.qq.com/q/5Ptk9wjsKk'}
+              >
+                QQ群：859708791
+              </Anchor>
+            </Text>
+          </Stack>
+        </Stack>
+      </MV4Card>
     </Stack>
   );
 }
