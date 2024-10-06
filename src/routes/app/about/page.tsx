@@ -108,7 +108,14 @@ export default function AboutPage() {
                 rel={'noreferrer'}
                 href={'https://qm.qq.com/q/5Ptk9wjsKk'}
               >
-                QQ群：859708791
+                公告群：859708791
+              </Anchor>{' '}
+              <Anchor
+                target={'_blank'}
+                rel={'noreferrer'}
+                href={'https://qm.qq.com/q/x40GXMQ0SG'}
+              >
+                交流群：974227577
               </Anchor>
             </Text>
           </Stack>
