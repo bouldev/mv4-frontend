@@ -333,7 +333,13 @@ export default function HelperBotCard() {
           <Text size="sm">
             签到可提升辅助用户的游戏等级，使其能进入更高等级的租赁服。
           </Text>
-          <Text size="sm">辅助用户每日首次进入租赁服时，将自动进行签到。</Text>
+          <Text size="sm">
+            辅助用户每日首次登录时，将自动尝试领取在线奖励。
+          </Text>
+          <Text size="sm">
+            您可以使用签到功能，自动完成任务，并手动尝试领取任务/在线奖励。
+          </Text>
+          <Text size="sm">为减少资源压力，该功能设置了 10 分钟冷却期。</Text>
         </Box>
       ),
       labels: { confirm: '确定签到', cancel: '取消' },
@@ -538,7 +544,7 @@ export default function HelperBotCard() {
                   {helperBotState.helperBotStatus === HelperBotStatus.OK && (
                     <>
                       {helperBotState.dailySigned ? (
-                        <Button disabled>已签到</Button>
+                        <Button disabled>功能冷却中</Button>
                       ) : (
                         <Button onClick={helperBotDailySign}>签到</Button>
                       )}
