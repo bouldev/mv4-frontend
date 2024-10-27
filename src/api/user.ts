@@ -8,6 +8,7 @@ export interface MV4UserInfo {
   plan: MV4UserProductType;
   planExpire: number;
   isLifetimePlan: boolean;
+  apiKey: string;
 }
 
 export enum MV4UserPermissionLevel {

@@ -41,6 +41,10 @@ export default function MV4AppShell({
     if (window.location.pathname === path) {
       return;
     }
+    if (path === '__OPENAPI__') {
+      window.open('https://fastbuilder.pro/openapi-doc/', '_blank');
+      return;
+    }
     setPendingNavigate(path);
     setShowMain(false);
   }

@@ -1,10 +1,20 @@
-import { Avatar, Box, Button, Group, Stack, Text, Title } from '@mantine/core';
+import {
+  Avatar,
+  Box,
+  Button,
+  Group,
+  Stack,
+  Text,
+  TextInput,
+  Title,
+} from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { useEffect, useState } from 'react';
 import { MD5 } from 'crypto-js';
 import { useModel } from '@modern-js/runtime/model';
 import { useNavigate } from '@modern-js/runtime/router';
 import { notifications } from '@mantine/notifications';
+import CopyToClipboard from 'copy-to-clipboard';
 import PageTitle from '@/ui/component/app/PageTitle';
 import {
   permissionToString,
@@ -18,16 +28,20 @@ import { downloadBlobText } from '@/utils/blobUtils';
 import MV4Card from '@/ui/component/app/MV4Card';
 import MV4WaterMark from '@/ui/component/MV4WaterMark';
 import BindPlayerCard from '@/ui/component/manage/BindPlayerCard';
+import { MV4UserPermissionLevel } from '@/api/user';
 
 export default function UserPage() {
   const [userModelState, userModelActions] = useModel(GlobalUserModel);
   const [showMore, setShowMore] = useState(false);
   const navigate = useNavigate();
+  const [apiKeyText, setApiKeyText] = useState('');
+  const [showApiKey, setShowApiKey] = useState(false);
 
   useEffect(() => {
     async function init() {
       try {
         await userModelActions.update();
+        setApiKeyText(userModelState.user.apiKey);
       } catch (e) {
         console.error(e);
       }
@@ -35,9 +49,18 @@ export default function UserPage() {
     init();
   }, []);
 
+  function onClickCopy(str: string) {
+    CopyToClipboard(str);
+    notifications.show({
+      message: '已将内容复制到剪贴板',
+    });
+  }
+
   return (
     <Stack>
-      <MV4WaterMark />
+      <MV4WaterMark
+        disable={userModelState.user.permission >= MV4UserPermissionLevel.ADMIN}
+      />
       <PageTitle>用户</PageTitle>
       <Stack gap={'sm'}>
         <MV4Card>
@@ -82,9 +105,11 @@ export default function UserPage() {
           <Stack gap={'md'}>
             <Title order={4}>账号信息</Title>
             <Stack gap={'sm'}>
-              <Text>产品：{productTypeToString(userModelState.user.plan)}</Text>
               <Text>
-                产品有效期：{productExpireDateToString(userModelState.user)}
+                订阅计划：{productTypeToString(userModelState.user.plan)}
+              </Text>
+              <Text>
+                计划有效期：{productExpireDateToString(userModelState.user)}
               </Text>
               <Text>
                 FBCoin：{showMore ? userModelState.user.fbCoins : '***'}
@@ -170,6 +195,92 @@ export default function UserPage() {
                   }}
                 >
                   获取FBToken
+                </Button>
+              </Group>
+            </Stack>
+          </Stack>
+        </MV4Card>
+        <MV4Card>
+          <Stack gap={'md'}>
+            <Title order={4}>OpenAPI Key</Title>
+            <Text size={'sm'}>调用OpenAPI需要用到的凭证。</Text>
+            <Text size={'sm'}>
+              OpenAPI Key拥有控制您账号的权限，因此请不要泄露给他人！
+            </Text>
+            <Stack gap={'sm'}>
+              {apiKeyText.length === 0 ? (
+                <Text size={'sm'} fs={'italic'}>
+                  未创建，点击“重置”以获取
+                </Text>
+              ) : (
+                <TextInput value={showApiKey ? apiKeyText : '******'} />
+              )}
+              <Group gap={'sm'}>
+                {apiKeyText.length > 0 && (
+                  <>
+                    <Button
+                      onClick={() => {
+                        setShowApiKey(!showApiKey);
+                      }}
+                    >
+                      {showApiKey ? '隐藏' : '显示'}
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        onClickCopy(apiKeyText);
+                      }}
+                    >
+                      复制
+                    </Button>
+                  </>
+                )}
+                <Button
+                  bg={'red'}
+                  onClick={async () => {
+                    modals.openConfirmModal({
+                      title: '确定重置OpenAPI Key？',
+                      children: (
+                        <Box>
+                          <Text size="sm">
+                            重置后，旧的OpenAPI Key将立刻失效。
+                          </Text>
+                        </Box>
+                      ),
+                      labels: { confirm: '确定重置', cancel: '取消' },
+                      confirmProps: { color: 'red' },
+                      onConfirm: async () => {
+                        try {
+                          const ret = await mv4RequestApi<
+                            any,
+                            {
+                              key: string;
+                            }
+                          >({
+                            path: '/user/reset-openapi-key',
+                            methodGet: true,
+                          });
+                          setApiKeyText(ret.data.key);
+                          notifications.show({
+                            message: '已重置OpenAPI Key',
+                          });
+                        } catch (e) {
+                          console.error(e);
+                          if (
+                            e instanceof MV4RequestError ||
+                            e instanceof Error
+                          ) {
+                            notifications.show({
+                              title: '重置OpenAPI Key失败',
+                              message: e.message,
+                              color: 'red',
+                            });
+                          }
+                        }
+                      },
+                    });
+                  }}
+                >
+                  重置
                 </Button>
               </Group>
             </Stack>

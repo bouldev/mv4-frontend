@@ -3,7 +3,13 @@ import { useMantineColorScheme } from '@mantine/core';
 import { Watermark } from '@pansy/react-watermark';
 import { GlobalUserModel } from '@/model/globalUserModel';
 
-export default function MV4WaterMark({ force = false }: { force?: boolean }) {
+export default function MV4WaterMark({
+  force = false,
+  disable = false,
+}: {
+  force?: boolean;
+  disable?: boolean;
+}) {
   const [userModelState] = useModel(GlobalUserModel);
   const { colorScheme } = useMantineColorScheme();
 
@@ -11,7 +17,9 @@ export default function MV4WaterMark({ force = false }: { force?: boolean }) {
     <Watermark
       isBody
       text={
-        force || userModelState.user.isLifetimePlan ? userModelState.wm : ['']
+        !disable && (force || userModelState.user.isLifetimePlan)
+          ? userModelState.wm
+          : ['']
       }
       fontColor={colorScheme === 'dark' ? '#ffffff' : '#000000'}
       opacity={0.23}

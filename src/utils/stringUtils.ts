@@ -23,7 +23,7 @@ export function permissionToString(level: MV4UserPermissionLevel) {
 export function productTypeToString(productType: MV4UserProductType) {
   switch (productType) {
     case MV4UserProductType.NO_SERVICES:
-      return '无';
+      return '无（未购买）';
     case MV4UserProductType.PREMIUM:
       return 'Premium';
     case MV4UserProductType.BUSINESS:
@@ -42,7 +42,7 @@ export function productExpireDateToString(userInfo: MV4UserInfo) {
     return '无限制';
   }
   if (userInfo.planExpire === 0) {
-    return '已过期';
+    return '从未购买过任何订阅计划';
   }
   const expireDateString = formatTime(userInfo.planExpire, true);
   if (userInfo.planExpire < nowUnix()) {

@@ -30,6 +30,7 @@ export const GlobalUserModel = model<GlobalUserModelInterface>(
       plan: 0,
       planExpire: 0,
       isLifetimePlan: false,
+      apiKey: '',
     },
     wm: [''],
   },

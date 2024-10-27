@@ -50,6 +50,7 @@ export default function MV4AppShellNavBar({
     { name: '商店', link: '/app/shop', icon: <Shop /> },
     { name: '下载', link: '/app/download', icon: <Download /> },
     { name: '关于', link: '/app/about', icon: <Help /> },
+    { name: 'OpenApi', link: '__OPENAPI__', icon: <Help /> },
   ]);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
