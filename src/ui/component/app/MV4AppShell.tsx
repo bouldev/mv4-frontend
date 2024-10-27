@@ -42,7 +42,7 @@ export default function MV4AppShell({
       return;
     }
     if (path === '__OPENAPI__') {
-      window.open('https://fastbuilder.pro/openapi-doc/', '_blank');
+      window.open('https://user.fastbuilder.pro/openapi-doc/', '_blank');
       return;
     }
     setPendingNavigate(path);
