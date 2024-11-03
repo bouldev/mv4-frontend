@@ -296,17 +296,23 @@ export default function ShopPage() {
                 </Text>
                 {userModelState.user.fbCoins > 0 ? (
                   <>
-                    <Text size="xs">
-                      本次将消耗{' '}
-                      {userModelState.user.fbCoins -
-                        Number(currentSetBuyAmountInput) *
-                          Math.floor(currentProduct.price / 2) >=
-                      0
-                        ? Number(currentSetBuyAmountInput) *
-                          Math.floor(currentProduct.price / 2)
-                        : userModelState.user.fbCoins}{' '}
-                      FBCoin
-                    </Text>
+                    {userModelState.user.fbCoins -
+                      (currentProduct.price *
+                        Number(currentSetBuyAmountInput)) /
+                        2 >=
+                      0 && (
+                      <Text size="xs">
+                        本次将消耗{' '}
+                        {userModelState.user.fbCoins -
+                          Number(currentSetBuyAmountInput) *
+                            Math.floor(currentProduct.price / 2) >=
+                        0
+                          ? Number(currentSetBuyAmountInput) *
+                            Math.floor(currentProduct.price / 2)
+                          : userModelState.user.fbCoins}{' '}
+                        FBCoin
+                      </Text>
+                    )}
                     {currentProduct.canPayDirectly ? (
                       <Text size={'xs'}>
                         使用FBCoin抵扣后，

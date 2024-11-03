@@ -55,6 +55,7 @@ export default function SlotManageCard() {
         methodGet: true,
       });
       setSlots(ret.data.list);
+      setPage(1);
       setTotalPages(Math.ceil(ret.data.list.length / PAGE_MAX_ITEMS));
       setCardLoading(false);
     } catch (e) {
@@ -448,7 +449,7 @@ export default function SlotManageCard() {
   return (
     <MV4Card>
       <Stack gap={'md'}>
-        <Title order={4}>您的 SLOT（卡槽）</Title>
+        <Title order={4}>您的 SLOT</Title>
         <Box>
           <Text size={'sm'}>
             除您绑定的服主账号外，您只能使辅助用户进入以下租赁服/玩家名下的租赁服。
@@ -465,7 +466,14 @@ export default function SlotManageCard() {
             （没有SLOT）
           </Text>
         )}
-        <Grid gutter="xs">
+        {!cardLoading && (
+          <Text size={'sm'}>
+            当前拥有 {slots.length} 个SLOT，正显示第{' '}
+            {(activePage - 1) * PAGE_MAX_ITEMS + 1}~
+            {Math.min(activePage * PAGE_MAX_ITEMS + 1, slots.length)} 个
+          </Text>
+        )}
+        <Grid gutter="xs" justify="flex-start" align="stretch">
           {!cardLoading &&
             slots
               .slice(
@@ -473,49 +481,60 @@ export default function SlotManageCard() {
                 activePage * PAGE_MAX_ITEMS,
               )
               .map((item, i) => (
-                <Grid.Col key={item.slotId} span={{ base: 12, md: 6, lg: 3 }}>
-                  <MV4Card pd="md">
-                    <Stack>
+                <Grid.Col
+                  key={item.slotId}
+                  span={{ base: 12, md: 6, lg: 3 }}
+                  display={'grid'}
+                >
+                  <MV4Card
+                    pd="md"
+                    style={{
+                      alignSelf: 'stretch',
+                    }}
+                  >
+                    <Stack
+                      style={{
+                        flexGrow: 1,
+                        justifyContent: 'space-between',
+                      }}
+                    >
                       {item.expire !== -1 ? (
-                        <>
+                        <Stack gap={'xs'}>
                           <Text size={'sm'}>
+                            #{i + 1}{' '}
+                            {item.expireToClean && (
+                              <Text span size={'sm'} c={'red'} fw={700}>
+                                (自动删除){' '}
+                              </Text>
+                            )}
+                            {item.dataType ===
+                              ServerSlotDataType.PLAYER_ID_SLOT && '玩家'}
+                            {item.dataType ===
+                              ServerSlotDataType.SERVER_ID_SLOT && '租赁服'}
+                            ：{item.data}
+                          </Text>
+                          {item.mark && <Text size="sm">({item.mark})</Text>}
+                          <Text size={'xs'}>
+                            {item.expire < nowUnix() ? '已过期' : '过期时间'}：
+                            {formatTime(item.expire, true)}
+                          </Text>
+                        </Stack>
+                      ) : (
+                        <Group gap={0} p={0}>
+                          <Text size={'sm'}>
+                            #{i + 1}{' '}
+                            {item.expireToClean && (
+                              <Text span size={'sm'} c={'red'} fw={700}>
+                                (自动删除){' '}
+                              </Text>
+                            )}
                             {item.dataType ===
                               ServerSlotDataType.PLAYER_ID_SLOT && '玩家 SLOT'}
                             {item.dataType ===
                               ServerSlotDataType.SERVER_ID_SLOT &&
-                              '租赁服 SLOT'}
-                            ：
-                            {item.mark
-                              ? `${item.mark} (${item.data})`
-                              : item.data}
-                          </Text>
-                          <Group>
-                            {item.expireToClean && (
-                              <Text size={'sm'} c={'red'} fw={700}>
-                                （自动删除）
-                              </Text>
-                            )}
-                            <Text size={'xs'}>
-                              {item.expire < nowUnix() ? '已过期' : '过期时间'}
-                              ：{formatTime(item.expire, true)}
-                            </Text>
-                          </Group>
-                        </>
-                      ) : (
-                        <Group gap={0} p={0}>
-                          <Text size={'sm'}>
-                            {item.dataType ===
-                              ServerSlotDataType.PLAYER_ID_SLOT && '玩家 SLOT '}
-                            {item.dataType ===
-                              ServerSlotDataType.SERVER_ID_SLOT &&
-                              '租赁服 SLOT '}
+                              '租赁服 SLOT'}{' '}
                             (未使用)
                           </Text>
-                          {item.expireToClean && (
-                            <Text size={'sm'} c={'red'} fw={700}>
-                              （自动删除）
-                            </Text>
-                          )}
                         </Group>
                       )}
                       <Group>

@@ -3,6 +3,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { useEffect, useState } from 'react';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
+import CopyToClipboard from 'copy-to-clipboard';
 import PageTitle from '@/ui/component/app/PageTitle';
 import { MV4Order, MV4OrderStatusEnum } from '@/api/order';
 import { formatTime } from '@/utils/timeUtils';
@@ -50,6 +51,14 @@ export default function ManagePage() {
           <Text>{reason}</Text>
           <Space />
           <Text>订单号：{params.get('orderNo') as string}</Text>
+          <Space />
+          <Group>
+            <Button
+              onClick={() => onClickCopy(params.get('orderNo') as string)}
+            >
+              复制订单号
+            </Button>
+          </Group>
         </Stack>
       ),
       onClose: () => {
@@ -87,6 +96,13 @@ export default function ManagePage() {
       )}`,
       '_blank',
     );
+  }
+
+  function onClickCopy(str: string) {
+    CopyToClipboard(str);
+    notifications.show({
+      message: '已将内容复制到剪贴板',
+    });
   }
 
   useEffect(() => {

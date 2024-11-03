@@ -10,6 +10,7 @@ import {
 import { useRef, useState } from 'react';
 import { notifications } from '@mantine/notifications';
 import { modals } from '@mantine/modals';
+import CopyToClipboard from 'copy-to-clipboard';
 import PageTitle from '@/ui/component/app/PageTitle';
 import { mv4RequestApi } from '@/api/mv4Client';
 import { MV4RequestError } from '@/api/base';
@@ -17,10 +18,11 @@ import { formatTime } from '@/utils/timeUtils';
 import MV4Card from '@/ui/component/app/MV4Card';
 import MV4WaterMark from '@/ui/component/MV4WaterMark';
 
-export default function ManagePage() {
+export default function CashPage() {
   const currentRedeemCode = useRef('');
   const currentOrderNo = useRef('');
   const [exportedText, setExportedText] = useState('');
+  const [showOrderNo, setShowOrderNo] = useState('');
 
   async function onClickQueryRedeemCode() {
     currentRedeemCode.current = '';
@@ -132,6 +134,7 @@ export default function ManagePage() {
                   },
                 });
                 setExportedText(ret.data.text);
+                setShowOrderNo(currentOrderNo.current);
                 notifications.show({
                   message: '已导出，请查看',
                 });
@@ -155,6 +158,13 @@ export default function ManagePage() {
     });
   }
 
+  function onClickCopy(str: string) {
+    CopyToClipboard(str);
+    notifications.show({
+      message: '已将内容复制到剪贴板',
+    });
+  }
+
   return (
     <Stack>
       <MV4WaterMark force={true} />
@@ -170,7 +180,13 @@ export default function ManagePage() {
               <Button onClick={() => onClickExportRedeemCode()}>
                 导出未使用的兑换码
               </Button>
+              <Button onClick={() => onClickCopy(exportedText)}>
+                复制导出的兑换码
+              </Button>
             </Group>
+            {showOrderNo.length > 0 && (
+              <Text size="sm">当前导出订单号 {showOrderNo} 下的兑换码</Text>
+            )}
             <Textarea
               placeholder="导出的兑换码"
               value={exportedText}

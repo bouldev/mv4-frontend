@@ -14,7 +14,6 @@ import {
   Commodity,
   Download,
   EveryUser,
-  GamePs,
   Help,
   Logout,
   Moon,
@@ -48,11 +47,10 @@ export default function MV4AppShellNavBar({
   const [navigateItemsUser, setNavigateItemsUser] = useState([
     { name: '公告', link: '/app', icon: <Announcement /> },
     { name: '管理', link: '/app/manage', icon: <MoreApp /> },
-    { name: '游戏账号', link: '/app/game-account', icon: <GamePs /> },
     { name: '用户', link: '/app/user', icon: <User /> },
     { name: '商店', link: '/app/shop', icon: <Shop /> },
+    { name: 'OpenAPI', link: '/app/openapi', icon: <Api /> },
     { name: '下载', link: '/app/download', icon: <Download /> },
-    { name: 'OpenAPI 文档', link: '__OPENAPI__', icon: <Api /> },
     { name: '关于', link: '/app/about', icon: <Help /> },
   ]);
 

@@ -502,7 +502,13 @@ export default function HelperBotCard({
           {isUserAccount ? (
             <>
               <Text size={'sm'}>
-                游戏账号用于调用 OpenAPI 的部分能力，例如管理租赁服状态。
+                游戏账号用于调用 OpenAPI 的部分特殊能力（例如管理租赁服状态）。
+              </Text>
+              <Text size={'sm'}>
+                不登录游戏账号，也能使用OpenAPI的绝大多数能力。
+              </Text>
+              <Text size={'sm'}>
+                游戏账号与绑定服主账号不冲突，您可以登录任意您需要使用的账号。
               </Text>
             </>
           ) : (
