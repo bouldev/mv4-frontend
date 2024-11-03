@@ -1,14 +1,20 @@
 import { ReactNode } from 'react';
-import { Card, useMantineColorScheme } from '@mantine/core';
+import { Card, MantineSpacing, useMantineColorScheme } from '@mantine/core';
 import eleCss from '@/ui/css/elements.module.css';
 
-export default function MV4Card({ children = null }: { children: ReactNode }) {
+export default function MV4Card({
+  children = null,
+  pd = 'lg',
+}: {
+  children: ReactNode;
+  pd?: MantineSpacing;
+}) {
   const { colorScheme } = useMantineColorScheme();
 
   return (
     <Card
       shadow="sm"
-      padding="lg"
+      padding={pd}
       radius="md"
       withBorder
       className={`${eleCss.appShellBg} ${

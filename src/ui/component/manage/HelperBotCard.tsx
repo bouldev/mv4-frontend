@@ -19,7 +19,11 @@ import { mv4RequestApi } from '@/api/mv4Client';
 import { MV4RequestError } from '@/api/base';
 import MV4Card from '@/ui/component/app/MV4Card';
 
-export default function HelperBotCard() {
+export default function HelperBotCard({
+  isUserAccount = false,
+}: {
+  isUserAccount?: boolean;
+}) {
   const [helperBotState, setHelperBotState] = useState<{
     loaded: boolean;
     helperBotStatus: HelperBotStatus;
@@ -46,6 +50,9 @@ export default function HelperBotCard() {
   const gameAccount = useRef('');
   const gamePassword = useRef('');
   const realnameUrl = useRef('');
+
+  const BASE_PATH = isUserAccount ? '/game-account' : '/helper-bot';
+  const CARD_NAME = isUserAccount ? '游戏账号' : '辅助用户';
 
   async function refreshHelperBotStatus() {
     setHelperBotState({
@@ -75,7 +82,7 @@ export default function HelperBotCard() {
           enableSkin: boolean;
         }
       >({
-        path: '/helper-bot/info',
+        path: `${BASE_PATH}/info`,
         methodGet: true,
       });
       if (ret.data.needRealname) {
@@ -97,7 +104,7 @@ export default function HelperBotCard() {
       console.error(e);
       if (e instanceof MV4RequestError || e instanceof Error) {
         notifications.show({
-          title: '获取辅助用户状态失败',
+          title: `获取${CARD_NAME}状态失败`,
           message: e.message,
           color: 'red',
         });
@@ -109,7 +116,7 @@ export default function HelperBotCard() {
     setHasErr(false);
     try {
       await mv4RequestApi({
-        path: '/helper-bot/setup/init',
+        path: `/${BASE_PATH}/setup/init`,
         methodGet: true,
       });
       await refreshHelperBotStatus();
@@ -136,7 +143,7 @@ export default function HelperBotCard() {
           dailySigned: boolean;
         }
       >({
-        path: '/helper-bot/setup/gen-new-account',
+        path: `/${BASE_PATH}/setup/gen-new-account`,
         methodGet: true,
       });
       if (ret.data.needRealname) {
@@ -175,9 +182,7 @@ export default function HelperBotCard() {
       closeOnClickOutside: false,
       children: (
         <Stack>
-          <Text size="sm">
-            我们不推荐使用该登录方式，并且只支持网易邮箱账号。
-          </Text>
+          <Text size="sm">目前只支持网易邮箱账号。</Text>
           <TextInput
             label="账号"
             leftSection={<User />}
@@ -221,7 +226,7 @@ export default function HelperBotCard() {
           enableSkin: boolean;
         }
       >({
-        path: '/helper-bot/setup/login-account',
+        path: `${BASE_PATH}/setup/login-account`,
         data: {
           account: gameAccount.current,
           password_md5: MD5(gamePassword.current).toString(),
@@ -260,7 +265,7 @@ export default function HelperBotCard() {
   async function helperBotSetNickname() {
     setHasErr(false);
     modals.open({
-      title: '设置辅助用户的昵称',
+      title: `设置${CARD_NAME}的昵称`,
       closeOnEscape: false,
       closeOnClickOutside: false,
       children: (
@@ -288,6 +293,11 @@ export default function HelperBotCard() {
   }
 
   async function onClickSetNickname() {
+    if (gameNickname.current.length < 2) {
+      setHasErr(true);
+      setErrReason('昵称需要大于2个字符');
+      return;
+    }
     try {
       const ret = await mv4RequestApi<
         any,
@@ -297,7 +307,7 @@ export default function HelperBotCard() {
           dailySigned: boolean;
         }
       >({
-        path: '/helper-bot/set-nickname',
+        path: `${BASE_PATH}/set-nickname`,
         data: {
           nickname: gameNickname.current,
         },
@@ -327,15 +337,19 @@ export default function HelperBotCard() {
 
   async function helperBotDailySign() {
     modals.openConfirmModal({
-      title: '辅助用户签到',
+      title: `${CARD_NAME}签到`,
       children: (
         <Box>
-          <Text size="sm">
-            签到可提升辅助用户的游戏等级，使其能进入更高等级的租赁服。
-          </Text>
-          <Text size="sm">
-            辅助用户每日首次登录时，将自动尝试领取在线奖励。
-          </Text>
+          {!isUserAccount && (
+            <>
+              <Text size="sm">
+                签到可提升{CARD_NAME}的游戏等级，使其能进入更高等级的租赁服。
+              </Text>
+              <Text size="sm">
+                {CARD_NAME}每日首次登录时，将自动尝试领取在线奖励。
+              </Text>
+            </>
+          )}
           <Text size="sm">
             您可以使用签到功能，自动完成任务，并手动尝试领取任务/在线奖励。
           </Text>
@@ -357,7 +371,7 @@ export default function HelperBotCard() {
               enableSkin: boolean;
             }
           >({
-            path: '/helper-bot/daily-sign',
+            path: `${BASE_PATH}/daily-sign`,
             methodGet: true,
           });
           notifications.show({
@@ -390,7 +404,8 @@ export default function HelperBotCard() {
       children: (
         <Box>
           <Text size="sm">
-            若您的辅助用户已在游戏设定使用某个特定的皮肤，启用该支持后，您的辅助用户在游戏内将显示对应皮肤。
+            若您的{CARD_NAME}
+            已在游戏设定使用某个特定的皮肤，启用该支持后，您的辅助用户在游戏内将显示对应皮肤。
           </Text>
           <Text size="sm">
             如果关闭，您的辅助用户在游戏内将显示为史蒂夫/艾莉克斯。
@@ -409,7 +424,7 @@ export default function HelperBotCard() {
               enableSkin: boolean;
             }
           >({
-            path: '/helper-bot/switch-enable-skin',
+            path: `${BASE_PATH}/switch-enable-skin`,
             methodGet: true,
           });
           notifications.show({
@@ -436,6 +451,39 @@ export default function HelperBotCard() {
     });
   }
 
+  async function dropUserGameAccount() {
+    modals.openConfirmModal({
+      title: '确定退出登录吗？',
+      children: (
+        <Box>
+          <Text size="sm">您可以使用其他账号重新登录。</Text>
+        </Box>
+      ),
+      labels: { confirm: '退出登录', cancel: '取消' },
+      confirmProps: { color: 'red' },
+      onConfirm: async () => {
+        try {
+          await mv4RequestApi({
+            path: `${BASE_PATH}/drop`,
+            methodGet: true,
+          });
+          notifications.show({
+            message: '操作成功',
+          });
+          await refreshHelperBotStatus();
+        } catch (e) {
+          console.error(e);
+          if (e instanceof MV4RequestError || e instanceof Error) {
+            notifications.show({
+              title: '退出登录失败',
+              message: e.message,
+            });
+          }
+        }
+      },
+    });
+  }
+
   useEffect(() => {
     async function init() {
       if (!isPageInit) {
@@ -449,19 +497,32 @@ export default function HelperBotCard() {
   return (
     <MV4Card>
       <Stack gap={'md'}>
-        <Title order={4}>您的辅助用户</Title>
+        <Title order={4}>您的{CARD_NAME}</Title>
         <Box>
-          <Text size={'sm'}>
-            辅助用户是用于进入您的租赁服完成操作的
-            <Text span fw={700}>
-              机器人用户
-            </Text>
-            。
-          </Text>
-          <Text size={'sm'}>
-            辅助用户的创建是 PhoenixBuilder
-            正常工作的必要条件，请确保您已设置完毕。
-          </Text>
+          {isUserAccount ? (
+            <>
+              <Text size={'sm'}>
+                游戏账号用于调用 OpenAPI 的部分能力，例如管理租赁服状态。
+              </Text>
+            </>
+          ) : (
+            <>
+              <Text size={'sm'}>
+                辅助用户是用于进入您的租赁服完成操作的
+                <Text span fw={700}>
+                  机器人用户
+                </Text>
+                。
+              </Text>
+              <Text size={'sm'}>
+                辅助用户的创建是 PhoenixBuilder 正常工作的
+                <Text span fw={700}>
+                  必要条件
+                </Text>
+                ，请确保您已设置完毕。
+              </Text>
+            </>
+          )}
         </Box>
         <Alert color="red" title="出现错误" icon={<Caution />} hidden={!hasErr}>
           <Text size={'sm'} fw={700}>
@@ -485,7 +546,11 @@ export default function HelperBotCard() {
                 <Text>（未登录账号）</Text>
                 <Group gap={'sm'} pt={'sm'}>
                   <Button onClick={refreshHelperBotStatus}>刷新状态</Button>
-                  <Button onClick={helperBotGenAccount}>自动生成新账号</Button>
+                  {!isUserAccount && (
+                    <Button onClick={helperBotGenAccount}>
+                      自动生成新账号
+                    </Button>
+                  )}
                   <Button
                     bg={'orange'}
                     onClick={() => {
@@ -517,30 +582,33 @@ export default function HelperBotCard() {
               HelperBotStatus.NEED_SET_NICKNAME && (
               <>
                 <Text>
-                  昵称：
                   {helperBotState.nickname
                     ? helperBotState.nickname
                     : '（未设置昵称）'}{' '}
                   <Text span>
                     (Lv.
                     {helperBotState.level > 0
-                      ? `${helperBotState.level}丨${helperBotState.exp}/${helperBotState.need_exp}`
+                      ? `${helperBotState.level}, ${helperBotState.exp}/${helperBotState.need_exp}`
                       : '-'}
                     )
                   </Text>
-                  <Text>
-                    皮肤支持：已{helperBotState.enableSkin ? '启用' : '关闭'}
-                  </Text>
+                  {!isUserAccount && (
+                    <Text>
+                      皮肤支持：已{helperBotState.enableSkin ? '启用' : '关闭'}
+                    </Text>
+                  )}
                 </Text>
                 <Group gap={'sm'} pt={'sm'}>
                   <Button onClick={refreshHelperBotStatus}>刷新状态</Button>
-                  <Button
-                    onClick={() => {
-                      helperBotSetNickname();
-                    }}
-                  >
-                    设置昵称
-                  </Button>
+                  {!isUserAccount && (
+                    <Button
+                      onClick={() => {
+                        helperBotSetNickname();
+                      }}
+                    >
+                      设置昵称
+                    </Button>
+                  )}
                   {helperBotState.helperBotStatus === HelperBotStatus.OK && (
                     <>
                       {helperBotState.dailySigned ? (
@@ -550,14 +618,25 @@ export default function HelperBotCard() {
                       )}
                     </>
                   )}
-                  {helperBotState.helperBotStatus === HelperBotStatus.OK && (
+                  {!isUserAccount &&
+                    helperBotState.helperBotStatus === HelperBotStatus.OK && (
+                      <Button
+                        bg="indigo"
+                        onClick={() =>
+                          helperBotSwitchEnableSkin(!helperBotState.enableSkin)
+                        }
+                      >
+                        {!helperBotState.enableSkin ? '启用' : '关闭'}皮肤支持
+                      </Button>
+                    )}
+                  {isUserAccount && (
                     <Button
-                      bg="indigo"
-                      onClick={() =>
-                        helperBotSwitchEnableSkin(!helperBotState.enableSkin)
-                      }
+                      bg="red"
+                      onClick={() => {
+                        dropUserGameAccount();
+                      }}
                     >
-                      {!helperBotState.enableSkin ? '启用' : '关闭'}皮肤支持
+                      退出登录
                     </Button>
                   )}
                 </Group>

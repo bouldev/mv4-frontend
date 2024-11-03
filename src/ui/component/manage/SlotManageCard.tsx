@@ -1,7 +1,10 @@
 import {
   Box,
   Button,
+  Flex,
+  Grid,
   Group,
+  Pagination,
   Stack,
   Text,
   TextInput,
@@ -26,7 +29,11 @@ export default function SlotManageCard() {
   const [cardLoading, setCardLoading] = useState(true);
   const currentInitInput = useRef('');
   const currentMarkInput = useRef('');
+  const currentRedeemCodeInput = useRef('');
   const [slots, setSlots] = useState<ServerSlot[]>([]);
+  const [activePage, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const PAGE_MAX_ITEMS = 8;
 
   useEffect(() => {
     async function init() {
@@ -48,6 +55,7 @@ export default function SlotManageCard() {
         methodGet: true,
       });
       setSlots(ret.data.list);
+      setTotalPages(Math.ceil(ret.data.list.length / PAGE_MAX_ITEMS));
       setCardLoading(false);
     } catch (e) {
       console.error(e);
@@ -70,19 +78,22 @@ export default function SlotManageCard() {
       children: (
         <Stack>
           <Text size="sm">
-            卡槽类型：{getDurationChineseString(thisSlot.slotTime)}{' '}
+            卡槽类型：
             {thisSlot.dataType === ServerSlotDataType.PLAYER_ID_SLOT &&
-              '游戏账号 SLOT'}
+              '玩家 SLOT'}
             {thisSlot.dataType === ServerSlotDataType.SERVER_ID_SLOT &&
-              '租赁服号 SLOT'}
+              '租赁服 SLOT'}
+          </Text>
+          <Text size="sm">
+            总时长：{getDurationChineseString(thisSlot.slotTime)}
           </Text>
           <TextInput
             label={
               <>
                 {thisSlot.dataType === ServerSlotDataType.PLAYER_ID_SLOT &&
-                  '游戏账号昵称'}
+                  '玩家昵称'}
                 {thisSlot.dataType === ServerSlotDataType.SERVER_ID_SLOT &&
-                  '租赁服号'}
+                  '租赁服'}
               </>
             }
             placeholder={'请输入'}
@@ -197,9 +208,9 @@ export default function SlotManageCard() {
         <Stack>
           <Text size="sm">
             {thisSlot.dataType === ServerSlotDataType.PLAYER_ID_SLOT &&
-              '游戏账号 SLOT'}
+              '玩家 SLOT'}
             {thisSlot.dataType === ServerSlotDataType.SERVER_ID_SLOT &&
-              '租赁服号 SLOT'}
+              '租赁服 SLOT'}
             ：{thisSlot.data}
           </Text>
           {thisSlot.mark && <Text size="sm">原备注：{thisSlot.mark}</Text>}
@@ -258,6 +269,87 @@ export default function SlotManageCard() {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async function onClickRenewThisSlotMark(thisSlot: ServerSlot, index: number) {
+    currentRedeemCodeInput.current = '';
+    modals.open({
+      title: '续费卡槽',
+      closeOnEscape: false,
+      closeOnClickOutside: false,
+      children: (
+        <Stack>
+          <TextInput
+            label="兑换码"
+            placeholder="请输入对应类型（租赁服/玩家）的兑换码"
+            onChange={e => {
+              currentRedeemCodeInput.current = e.currentTarget.value;
+            }}
+          />
+          <Button
+            fullWidth
+            onClick={async () => {
+              modals.closeAll();
+              try {
+                const ret = await mv4RequestApi<any, { name: string }>({
+                  path: '/redeem-code/get-status',
+                  data: {
+                    code: currentRedeemCodeInput.current,
+                    requireSlotId: thisSlot.slotId,
+                  },
+                });
+                modals.openConfirmModal({
+                  title: '确定使用该兑换码续费吗？',
+                  children: (
+                    <Box>
+                      <Text size="sm">兑换码名称：{ret.data.name}</Text>
+                    </Box>
+                  ),
+                  labels: { confirm: '确定', cancel: '取消' },
+                  onConfirm: async () => {
+                    try {
+                      await mv4RequestApi({
+                        path: '/redeem-code/renew-server-slot',
+                        data: {
+                          requireSlotId: thisSlot.slotId,
+                          code: currentRedeemCodeInput.current,
+                        },
+                      });
+                      notifications.show({
+                        message: '续费成功',
+                      });
+                      await updateSlotList();
+                    } catch (e) {
+                      console.error(e);
+                      if (e instanceof MV4RequestError || e instanceof Error) {
+                        notifications.show({
+                          title: '续费失败',
+                          message: e.message,
+                          color: 'red',
+                        });
+                      }
+                    }
+                  },
+                });
+              } catch (e) {
+                console.error(e);
+                if (e instanceof MV4RequestError || e instanceof Error) {
+                  notifications.show({
+                    title: '续费失败',
+                    message: e.message,
+                    color: 'red',
+                  });
+                }
+              }
+            }}
+            mt="md"
+          >
+            使用
+          </Button>
+        </Stack>
+      ),
+    });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async function onClickDropThisSlot(thisSlot: ServerSlot, index: number) {
     modals.openConfirmModal({
       title: '删除确认',
@@ -267,9 +359,9 @@ export default function SlotManageCard() {
         <Stack>
           <Text size="sm">
             {thisSlot.dataType === ServerSlotDataType.PLAYER_ID_SLOT &&
-              '游戏账号 SLOT'}
+              '玩家 SLOT'}
             {thisSlot.dataType === ServerSlotDataType.SERVER_ID_SLOT &&
-              '租赁服号 SLOT'}
+              '租赁服 SLOT'}
             ：{thisSlot.data}
             {thisSlot.mark && `（备注：${thisSlot.mark}）`}
           </Text>
@@ -310,31 +402,43 @@ export default function SlotManageCard() {
       children: (
         <Stack>
           <Text size="sm">
-            卡槽类型：{getDurationChineseString(thisSlot.slotTime)}{' '}
+            卡槽类型：
             {thisSlot.dataType === ServerSlotDataType.PLAYER_ID_SLOT &&
-              '游戏账号 SLOT'}
+              '玩家 SLOT'}
             {thisSlot.dataType === ServerSlotDataType.SERVER_ID_SLOT &&
-              '租赁服号 SLOT'}
+              '租赁服 SLOT'}
+          </Text>
+          <Text size="sm">
+            总时长：{getDurationChineseString(thisSlot.slotTime)}
           </Text>
           <Text size="sm">
             绑定的
             {thisSlot.dataType === ServerSlotDataType.PLAYER_ID_SLOT &&
-              '游戏昵称'}
+              '玩家昵称'}
             {thisSlot.dataType === ServerSlotDataType.SERVER_ID_SLOT &&
               '租赁服号'}
             ：{thisSlot.data}
           </Text>
           {thisSlot.mark && <Text size="sm">备注：{thisSlot.mark}</Text>}
-          <Group>
+          <Group mt="md">
             <Button
               onClick={() => {
                 modals.closeAll();
                 onClickEditThisSlotMark(thisSlot, index);
               }}
-              mt="md"
             >
               修改备注
             </Button>
+            {!thisSlot.expireToClean && (
+              <Button
+                bg={'teal'}
+                onClick={() => {
+                  onClickRenewThisSlotMark(thisSlot, index);
+                }}
+              >
+                续费
+              </Button>
+            )}
           </Group>
         </Stack>
       ),
@@ -347,7 +451,7 @@ export default function SlotManageCard() {
         <Title order={4}>您的 SLOT（卡槽）</Title>
         <Box>
           <Text size={'sm'}>
-            除您绑定的服主账号外，您只能使辅助用户进入以下租赁服/游戏账号名下的租赁服。
+            除您绑定的服主账号外，您只能使辅助用户进入以下租赁服/玩家名下的租赁服。
           </Text>
           <Text size={'sm'}>卡槽只会在初始化后开始计算有效期。</Text>
         </Box>
@@ -361,84 +465,117 @@ export default function SlotManageCard() {
             （没有SLOT）
           </Text>
         )}
-        {!cardLoading &&
-          slots.map((item, i) => (
-            <MV4Card key={item.slotId}>
-              <Group justify={'space-between'}>
-                <Stack>
-                  {item.expire !== -1 ? (
-                    <>
-                      <Text size={'sm'}>
-                        {item.dataType === ServerSlotDataType.PLAYER_ID_SLOT &&
-                          '游戏账号 SLOT'}
-                        {item.dataType === ServerSlotDataType.SERVER_ID_SLOT &&
-                          '租赁服号 SLOT'}
-                        ：
-                        {item.mark ? `${item.mark} (${item.data})` : item.data}
-                      </Text>
-                      <Group>
-                        {item.expireToClean && (
-                          <Text size={'sm'} c={'red'} fw={700}>
-                            （自动删除）
+        <Grid gutter="xs">
+          {!cardLoading &&
+            slots
+              .slice(
+                (activePage - 1) * PAGE_MAX_ITEMS,
+                activePage * PAGE_MAX_ITEMS,
+              )
+              .map((item, i) => (
+                <Grid.Col key={item.slotId} span={{ base: 12, md: 6, lg: 3 }}>
+                  <MV4Card pd="md">
+                    <Stack>
+                      {item.expire !== -1 ? (
+                        <>
+                          <Text size={'sm'}>
+                            {item.dataType ===
+                              ServerSlotDataType.PLAYER_ID_SLOT && '玩家 SLOT'}
+                            {item.dataType ===
+                              ServerSlotDataType.SERVER_ID_SLOT &&
+                              '租赁服 SLOT'}
+                            ：
+                            {item.mark
+                              ? `${item.mark} (${item.data})`
+                              : item.data}
                           </Text>
-                        )}
-                        <Text size={'xs'}>
-                          {item.expire < nowUnix() ? '已过期' : '过期时间'}：
-                          {formatTime(item.expire, true)}
-                        </Text>
-                      </Group>
-                    </>
-                  ) : (
-                    <Group gap={0} p={0}>
-                      <Text size={'sm'}>
-                        {item.dataType === ServerSlotDataType.PLAYER_ID_SLOT &&
-                          '游戏账号 SLOT '}
-                        {item.dataType === ServerSlotDataType.SERVER_ID_SLOT &&
-                          '租赁服号 SLOT '}
-                        (未使用)
-                      </Text>
-                      {item.expireToClean && (
-                        <Text size={'sm'} c={'red'} fw={700}>
-                          （自动删除）
-                        </Text>
+                          <Group>
+                            {item.expireToClean && (
+                              <Text size={'sm'} c={'red'} fw={700}>
+                                （自动删除）
+                              </Text>
+                            )}
+                            <Text size={'xs'}>
+                              {item.expire < nowUnix() ? '已过期' : '过期时间'}
+                              ：{formatTime(item.expire, true)}
+                            </Text>
+                          </Group>
+                        </>
+                      ) : (
+                        <Group gap={0} p={0}>
+                          <Text size={'sm'}>
+                            {item.dataType ===
+                              ServerSlotDataType.PLAYER_ID_SLOT && '玩家 SLOT '}
+                            {item.dataType ===
+                              ServerSlotDataType.SERVER_ID_SLOT &&
+                              '租赁服 SLOT '}
+                            (未使用)
+                          </Text>
+                          {item.expireToClean && (
+                            <Text size={'sm'} c={'red'} fw={700}>
+                              （自动删除）
+                            </Text>
+                          )}
+                        </Group>
                       )}
-                    </Group>
-                  )}
-                </Stack>
-                <Group gap={'xs'}>
-                  {item.expire < nowUnix() && item.expire !== -1 && (
-                    <Button
-                      bg={'red'}
-                      onClick={() => {
-                        onClickDropThisSlot(item, i);
-                      }}
-                    >
-                      删除
-                    </Button>
-                  )}
-                  {item.data.length === 0 && (
-                    <Button
-                      bg={'lime'}
-                      onClick={() => {
-                        onClickInitThisSlot(item, i);
-                      }}
-                    >
-                      初始化
-                    </Button>
-                  )}
-                  {item.data.length > 0 && item.expire > nowUnix() && (
-                    <Button
-                      onClick={() => {
-                        onClickManageThisSlot(item, i);
-                      }}
-                    >
-                      管理
-                    </Button>
-                  )}
-                </Group>
-              </Group>
-            </MV4Card>
-          ))}
+                      <Group>
+                        {item.expire < nowUnix() && item.expire !== -1 && (
+                          <>
+                            {!item.expireToClean && (
+                              <Button
+                                bg={'teal'}
+                                onClick={() => {
+                                  onClickRenewThisSlotMark(item, i);
+                                }}
+                              >
+                                续费
+                              </Button>
+                            )}
+                            <Button
+                              bg={'red'}
+                              onClick={() => {
+                                onClickDropThisSlot(item, i);
+                              }}
+                            >
+                              删除
+                            </Button>
+                          </>
+                        )}
+                        {item.data.length === 0 && (
+                          <Button
+                            bg={'lime'}
+                            onClick={() => {
+                              onClickInitThisSlot(item, i);
+                            }}
+                          >
+                            初始化
+                          </Button>
+                        )}
+                        {item.data.length > 0 && item.expire > nowUnix() && (
+                          <Button
+                            onClick={() => {
+                              onClickManageThisSlot(item, i);
+                            }}
+                          >
+                            管理
+                          </Button>
+                        )}
+                      </Group>
+                    </Stack>
+                  </MV4Card>
+                </Grid.Col>
+              ))}
+        </Grid>
+        <Flex justify={'center'}>
+          <Pagination
+            disabled={cardLoading}
+            withControls={false}
+            size={'lg'}
+            value={activePage}
+            onChange={value => setPage(value)}
+            total={totalPages}
+          />
+        </Flex>
       </Stack>
     </MV4Card>
   );

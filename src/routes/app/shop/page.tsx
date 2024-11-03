@@ -29,8 +29,6 @@ import { mv4RequestApi } from '@/api/mv4Client';
 import { GlobalUserModel } from '@/model/globalUserModel';
 import { MV4UserPermissionLevel } from '@/api/user';
 import MV4Card from '@/ui/component/app/MV4Card';
-import initTianAiCaptcha from '@/utils/tianAiCaptcha';
-import { awaitSleep } from '@/utils/asyncUtils';
 
 export default function ShopPage() {
   const { colorScheme } = useMantineColorScheme();
@@ -60,6 +58,7 @@ export default function ShopPage() {
     useState(false);
   const currentRedeemCode = useRef('');
   const [captchaModalOpened, captchaModalActions] = useDisclosure(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [captchaInitSuccess, setCaptchaInitSuccess] = useState(false);
 
   async function refreshShopList() {
@@ -120,7 +119,7 @@ export default function ShopPage() {
         <Stack>
           <TextInput
             label="兑换码"
-            placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+            placeholder="请输入兑换码"
             onChange={e => {
               currentRedeemCode.current = e.currentTarget.value;
             }}
@@ -143,6 +142,27 @@ export default function ShopPage() {
                   ),
                   labels: { confirm: '确定', cancel: '取消' },
                   onConfirm: async () => {
+                    try {
+                      await mv4RequestApi({
+                        path: '/redeem-code/use',
+                        data: {
+                          code: currentRedeemCode.current,
+                        },
+                      });
+                      notifications.show({
+                        message: '成功使用兑换码',
+                      });
+                    } catch (e) {
+                      console.error(e);
+                      if (e instanceof MV4RequestError || e instanceof Error) {
+                        notifications.show({
+                          title: '兑换码使用失败',
+                          message: e.message,
+                          color: 'red',
+                        });
+                      }
+                    }
+                    /*
                     setCaptchaInitSuccess(false);
                     captchaModalActions.open();
                     await awaitSleep(100);
@@ -181,6 +201,7 @@ export default function ShopPage() {
                         setCaptchaInitSuccess(true);
                       },
                     });
+                    */
                   },
                 });
               } catch (e) {

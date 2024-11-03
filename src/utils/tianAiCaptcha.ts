@@ -16,12 +16,12 @@ export default function initTianAiCaptcha(
   elementId: string,
   initConfig: TianAiCaptchaInitConfig,
 ) {
-  /*
   if (process.env.NODE_ENV === 'development') {
-    successCallback('1145141919810');
+    if (initConfig.onSuccess) {
+      initConfig.onSuccess('1145141919810');
+    }
     return;
   }
-  */
   const config = {
     requestCaptchaDataUrl: '/captcha-api/gen',
     validCaptchaUrl: '/captcha-api/check',
