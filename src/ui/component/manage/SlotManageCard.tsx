@@ -470,7 +470,7 @@ export default function SlotManageCard() {
           <Text size={'sm'}>
             当前拥有 {slots.length} 个SLOT，正显示第{' '}
             {(activePage - 1) * PAGE_MAX_ITEMS + 1}~
-            {Math.min(activePage * PAGE_MAX_ITEMS + 1, slots.length)} 个
+            {Math.min(activePage * PAGE_MAX_ITEMS, slots.length)} 个
           </Text>
         )}
         <Grid gutter="xs" justify="flex-start" align="stretch">
@@ -501,7 +501,7 @@ export default function SlotManageCard() {
                       {item.expire !== -1 ? (
                         <Stack gap={'xs'}>
                           <Text size={'sm'}>
-                            #{i + 1}{' '}
+                            #{(activePage - 1) * PAGE_MAX_ITEMS + i + 1}{' '}
                             {item.expireToClean && (
                               <Text span size={'sm'} c={'red'} fw={700}>
                                 (自动删除){' '}
@@ -522,7 +522,7 @@ export default function SlotManageCard() {
                       ) : (
                         <Group gap={0} p={0}>
                           <Text size={'sm'}>
-                            #{i + 1}{' '}
+                            #{(activePage - 1) * PAGE_MAX_ITEMS + i + 1}{' '}
                             {item.expireToClean && (
                               <Text span size={'sm'} c={'red'} fw={700}>
                                 (自动删除){' '}
