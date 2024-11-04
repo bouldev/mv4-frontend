@@ -2,22 +2,27 @@ import {
   Alert,
   Box,
   Button,
+  Grid,
   Group,
+  Modal,
   PasswordInput,
   Stack,
   Text,
   TextInput,
   Title,
 } from '@mantine/core';
-import { Caution, Key, User } from '@icon-park/react';
+import { Caution, Key, MessageSecurity, Phone, User } from '@icon-park/react';
 import { useEffect, useRef, useState } from 'react';
 import { notifications } from '@mantine/notifications';
 import { modals } from '@mantine/modals';
 import { MD5 } from 'crypto-js';
+import { useDisclosure } from '@mantine/hooks';
 import { HelperBotStatus } from '@/api/helper_bot';
 import { mv4RequestApi } from '@/api/mv4Client';
 import { MV4RequestError } from '@/api/base';
 import MV4Card from '@/ui/component/app/MV4Card';
+import { awaitSleep } from '@/utils/asyncUtils';
+import initTianAiCaptcha from '@/utils/tianAiCaptcha';
 
 export default function HelperBotCard({
   isUserAccount = false,
@@ -46,10 +51,18 @@ export default function HelperBotCard({
   const [isPageInit, setIsPageInit] = useState(false);
   const [hasErr, setHasErr] = useState(false);
   const [errReason, setErrReason] = useState('');
+
+  const realnameUrl = useRef('');
+
   const gameNickname = useRef('');
   const gameAccount = useRef('');
   const gamePassword = useRef('');
-  const realnameUrl = useRef('');
+
+  const gamePhoneNum = useRef('');
+  const gameVerifySMSCode = useRef('');
+
+  const [captchaModalOpened, captchaModalActions] = useDisclosure(false);
+  const [captchaInitSuccess, setCaptchaInitSuccess] = useState(false);
 
   const BASE_PATH = isUserAccount ? '/game-account' : '/helper-bot';
   const CARD_NAME = isUserAccount ? '游戏账号' : '辅助用户';
@@ -177,15 +190,15 @@ export default function HelperBotCard({
   async function helperBotLoginAccount() {
     setHasErr(false);
     modals.open({
-      title: '使用自己的账号',
+      title: '邮箱登录',
       closeOnEscape: false,
       closeOnClickOutside: false,
       children: (
         <Stack>
-          <Text size="sm">目前只支持网易邮箱账号。</Text>
           <TextInput
             label="账号"
             leftSection={<User />}
+            placeholder="example@example.com"
             onChange={e => {
               gameAccount.current = e.currentTarget.value;
             }}
@@ -200,7 +213,6 @@ export default function HelperBotCard({
           <Button
             fullWidth
             onClick={() => {
-              modals.closeAll();
               onClickLoginAccount();
             }}
             mt="md"
@@ -212,7 +224,74 @@ export default function HelperBotCard({
     });
   }
 
+  async function helperBotPhoneLoginAccount() {
+    setHasErr(false);
+    modals.open({
+      title: '手机号登录',
+      closeOnEscape: false,
+      closeOnClickOutside: false,
+      children: (
+        <Stack>
+          <Grid gutter="xs" justify="flex-start" align="stretch">
+            <Grid.Col span={12}>
+              <TextInput
+                label="手机号"
+                leftSection={<Phone />}
+                onChange={e => {
+                  gamePhoneNum.current = e.currentTarget.value;
+                }}
+              />
+            </Grid.Col>
+            <Grid.Col span={8}>
+              <TextInput
+                label="验证码"
+                leftSection={<MessageSecurity />}
+                onChange={e => {
+                  gameVerifySMSCode.current = e.currentTarget.value;
+                }}
+              />
+            </Grid.Col>
+            <Grid.Col span={4} display="flex">
+              <Button
+                size="sm"
+                onClick={() => {
+                  onClickPhoneLoginSendSMS();
+                }}
+                style={{
+                  alignSelf: 'flex-end',
+                }}
+              >
+                获取验证码
+              </Button>
+            </Grid.Col>
+          </Grid>
+          <Button
+            fullWidth
+            onClick={() => {
+              onClickPhoneLoginAccount();
+            }}
+            mt="md"
+          >
+            登录
+          </Button>
+        </Stack>
+      ),
+    });
+  }
+
   async function onClickLoginAccount() {
+    if (gameAccount.current.length === 0) {
+      notifications.show({
+        message: '账号不得为空',
+        color: 'red',
+      });
+    }
+    if (gamePassword.current.length === 0) {
+      notifications.show({
+        message: '密码不得为空',
+        color: 'red',
+      });
+    }
     try {
       const ret = await mv4RequestApi<
         any,
@@ -253,7 +332,194 @@ export default function HelperBotCard({
       });
       gameAccount.current = '';
       gamePassword.current = '';
+      modals.closeAll();
     } catch (e) {
+      console.error(e);
+      if (e instanceof MV4RequestError || e instanceof Error) {
+        setHasErr(true);
+        setErrReason(e.message);
+      }
+      modals.closeAll();
+    }
+  }
+
+  async function onClickPhoneLoginSendSMS() {
+    if (gamePhoneNum.current.length === 0) {
+      notifications.show({
+        message: '手机号不得为空',
+        color: 'red',
+      });
+      return;
+    }
+    setCaptchaInitSuccess(false);
+    captchaModalActions.open();
+    await awaitSleep(100);
+    initTianAiCaptcha('#tac-box-shop', {
+      onSuccess: async token => {
+        captchaModalActions.close();
+        try {
+          const ret = await mv4RequestApi<
+            any,
+            {
+              reqSucc: boolean;
+              msg: string;
+              sms_content: string;
+              need_code: boolean;
+            }
+          >({
+            path: `${BASE_PATH}/setup/phone-request-sms`,
+            data: {
+              phoneNumber: gamePhoneNum.current,
+              captcha_token: token,
+            },
+          });
+          if (!ret.data.reqSucc) {
+            onRequestSMSFailed(
+              ret.data.msg,
+              ret.data.sms_content,
+              ret.data.need_code,
+            );
+            return;
+          }
+          notifications.show({
+            message: '已请求验证码，请注意查收',
+          });
+        } catch (e) {
+          console.error(e);
+          if (e instanceof MV4RequestError || e instanceof Error) {
+            modals.open({
+              title: '验证码请求失败',
+              closeOnEscape: false,
+              closeOnClickOutside: false,
+              children: (
+                <Box>
+                  <Text>{e.message}</Text>
+                </Box>
+              ),
+            });
+          }
+        }
+      },
+      onClickClose: () => {
+        captchaModalActions.close();
+      },
+      onInitialize: () => {
+        setCaptchaInitSuccess(true);
+      },
+    });
+  }
+
+  async function onRequestSMSFailed(
+    msg: string,
+    sms_content: string,
+    need_code: boolean,
+  ) {
+    modals.openConfirmModal({
+      title: '验证码请求失败',
+      closeOnEscape: false,
+      closeOnClickOutside: false,
+      children: (
+        <Box>
+          <Text size="sm">{msg}</Text>
+        </Box>
+      ),
+      labels: { confirm: '我已发送', cancel: '取消' },
+      onConfirm: async () => {
+        if (need_code) {
+          return;
+        }
+        const _state = helperBotState;
+        _state.loaded = false;
+        setHelperBotState(_state);
+        notifications.show({
+          message: '请稍等',
+        });
+        modals.closeAll();
+        await basePhoneLoginAccount(gamePhoneNum.current, 'NULL', sms_content);
+      },
+    });
+  }
+
+  async function onClickPhoneLoginAccount() {
+    if (gamePhoneNum.current.length === 0) {
+      notifications.show({
+        message: '手机号不得为空',
+        color: 'red',
+      });
+      return;
+    }
+    if (gameVerifySMSCode.current.length === 0) {
+      notifications.show({
+        message: '验证码不得为空',
+        color: 'red',
+      });
+      return;
+    }
+    await basePhoneLoginAccount(
+      gamePhoneNum.current,
+      gameVerifySMSCode.current,
+    );
+  }
+
+  async function basePhoneLoginAccount(
+    phoneNum: string,
+    smsCode: string,
+    smsContent = '',
+  ) {
+    const _DATA: {
+      phoneNumber: string;
+      code: string;
+      sms_content?: string;
+    } = {
+      phoneNumber: phoneNum,
+      code: smsCode,
+    };
+    if (smsContent.length > 0) {
+      _DATA.sms_content = smsContent;
+    }
+    try {
+      const ret = await mv4RequestApi<
+        any,
+        {
+          needRealname: boolean;
+          realnameMessage: string;
+          realnameUrl: string;
+          status: HelperBotStatus;
+          nickname: string;
+          dailySigned: boolean;
+          enableSkin: boolean;
+        }
+      >({
+        path: `${BASE_PATH}/setup/phone-verify-sms`,
+        data: _DATA,
+      });
+      if (ret.data.needRealname) {
+        setHasErr(true);
+        setErrReason(ret.data.realnameMessage);
+        realnameUrl.current = ret.data.realnameUrl;
+      } else {
+        notifications.show({
+          message: '操作成功',
+        });
+      }
+      setHelperBotState({
+        loaded: true,
+        helperBotStatus: ret.data.status,
+        nickname: ret.data.nickname,
+        dailySigned: ret.data.dailySigned,
+        level: helperBotState.level,
+        exp: helperBotState.exp,
+        need_exp: helperBotState.need_exp,
+        enableSkin: helperBotState.enableSkin,
+      });
+      gamePhoneNum.current = '';
+      gameVerifySMSCode.current = '';
+      modals.closeAll();
+    } catch (e) {
+      const _state = helperBotState;
+      _state.loaded = true;
+      setHelperBotState(_state);
+      modals.closeAll();
       console.error(e);
       if (e instanceof MV4RequestError || e instanceof Error) {
         setHasErr(true);
@@ -495,166 +761,212 @@ export default function HelperBotCard({
   }, []);
 
   return (
-    <MV4Card>
-      <Stack gap={'md'}>
-        <Title order={4}>您的{CARD_NAME}</Title>
-        <Box>
-          {isUserAccount ? (
-            <>
-              <Text size={'sm'}>
-                游戏账号用于调用 OpenAPI 的部分特殊能力（例如管理租赁服状态）。
-              </Text>
-              <Text size={'sm'}>
-                不登录游戏账号，也能使用OpenAPI的绝大多数能力。
-              </Text>
-              <Text size={'sm'}>
-                游戏账号与绑定服主账号不冲突，您可以登录任意您需要使用的账号。
-              </Text>
-            </>
-          ) : (
-            <>
-              <Text size={'sm'}>
-                辅助用户是用于进入您的租赁服完成操作的
-                <Text span fw={700}>
-                  机器人用户
+    <Box>
+      <CaptchaModal
+        opened={captchaModalOpened}
+        onClose={captchaModalActions.close}
+        initSuccess={captchaInitSuccess}
+      />
+      <MV4Card>
+        <Stack gap={'md'}>
+          <Title order={4}>您的{CARD_NAME}</Title>
+          <Box>
+            {isUserAccount ? (
+              <>
+                <Text size={'sm'}>
+                  游戏账号用于调用 OpenAPI
+                  的部分特殊能力（例如管理租赁服状态）。
                 </Text>
-                。
-              </Text>
-              <Text size={'sm'}>
-                辅助用户的创建是 PhoenixBuilder 正常工作的
-                <Text span fw={700}>
-                  必要条件
+                <Text size={'sm'}>
+                  不登录游戏账号，也能使用 OpenAPI 的绝大多数能力。
                 </Text>
-                ，请确保您已设置完毕。
-              </Text>
-            </>
-          )}
-        </Box>
-        <Alert color="red" title="出现错误" icon={<Caution />} hidden={!hasErr}>
-          <Text size={'sm'} fw={700}>
-            {errReason}
-          </Text>
-        </Alert>
-        {helperBotState.loaded ? (
-          <>
-            {helperBotState.helperBotStatus === HelperBotStatus.NEED_INIT && (
-              <>
-                <Text>（未初始化）</Text>
-                <Group gap={'sm'} pt={'sm'}>
-                  <Button onClick={refreshHelperBotStatus}>刷新状态</Button>
-                  <Button onClick={initHelperBot}>初始化</Button>
-                </Group>
+                <Text size={'sm'}>
+                  游戏账号与绑定服主账号不冲突，您可以登录任意您需要使用的账号。
+                </Text>
               </>
-            )}
-            {helperBotState.helperBotStatus ===
-              HelperBotStatus.NEED_LOGIN_ACCOUNT && (
+            ) : (
               <>
-                <Text>（未登录账号）</Text>
-                <Group gap={'sm'} pt={'sm'}>
-                  <Button onClick={refreshHelperBotStatus}>刷新状态</Button>
-                  {!isUserAccount && (
-                    <Button onClick={helperBotGenAccount}>
-                      自动生成新账号
-                    </Button>
-                  )}
-                  <Button
-                    bg={'orange'}
-                    onClick={() => {
-                      helperBotLoginAccount();
-                    }}
-                  >
-                    使用自己的账号
-                  </Button>
-                </Group>
-              </>
-            )}
-            {helperBotState.helperBotStatus ===
-              HelperBotStatus.NEED_REALNAME && (
-              <>
-                <Text>（未实名）</Text>
-                <Group gap={'sm'} pt={'sm'}>
-                  <Button onClick={refreshHelperBotStatus}>刷新状态</Button>
-                  <Button
-                    onClick={() => {
-                      window.open(realnameUrl.current, '_blank');
-                    }}
-                  >
-                    前往实名
-                  </Button>
-                </Group>
-              </>
-            )}
-            {helperBotState.helperBotStatus >=
-              HelperBotStatus.NEED_SET_NICKNAME && (
-              <>
-                <Text>
-                  {helperBotState.nickname
-                    ? helperBotState.nickname
-                    : '（未设置昵称）'}{' '}
-                  <Text span>
-                    (Lv.
-                    {helperBotState.level > 0
-                      ? `${helperBotState.level}, ${helperBotState.exp}/${helperBotState.need_exp}`
-                      : '-'}
-                    )
+                <Text size={'sm'}>
+                  辅助用户是用于进入您的租赁服完成操作的
+                  <Text span fw={700}>
+                    机器人用户
                   </Text>
-                  {!isUserAccount && (
-                    <Text>
-                      皮肤支持：已{helperBotState.enableSkin ? '启用' : '关闭'}
-                    </Text>
-                  )}
+                  。
                 </Text>
-                <Group gap={'sm'} pt={'sm'}>
-                  <Button onClick={refreshHelperBotStatus}>刷新状态</Button>
-                  {!isUserAccount && (
+                <Text size={'sm'}>
+                  辅助用户的创建是 PhoenixBuilder 正常工作的
+                  <Text span fw={700}>
+                    必要条件
+                  </Text>
+                  ，请确保您已设置完毕。
+                </Text>
+              </>
+            )}
+          </Box>
+          <Alert
+            color="red"
+            title="出现错误"
+            icon={<Caution />}
+            hidden={!hasErr}
+          >
+            <Text size={'sm'} fw={700}>
+              {errReason}
+            </Text>
+          </Alert>
+          {helperBotState.loaded ? (
+            <>
+              {helperBotState.helperBotStatus === HelperBotStatus.NEED_INIT && (
+                <>
+                  <Text>（未初始化）</Text>
+                  <Group gap={'sm'} pt={'sm'}>
+                    <Button onClick={refreshHelperBotStatus}>刷新状态</Button>
+                    <Button onClick={initHelperBot}>初始化</Button>
+                  </Group>
+                </>
+              )}
+              {helperBotState.helperBotStatus ===
+                HelperBotStatus.NEED_LOGIN_ACCOUNT && (
+                <>
+                  <Text>（未登录账号）</Text>
+                  <Group gap={'sm'} pt={'sm'}>
+                    <Button onClick={refreshHelperBotStatus}>刷新状态</Button>
+                    {!isUserAccount && (
+                      <Button onClick={helperBotGenAccount}>自动生成</Button>
+                    )}
                     <Button
+                      bg={'orange'}
                       onClick={() => {
-                        helperBotSetNickname();
+                        helperBotLoginAccount();
                       }}
                     >
-                      设置昵称
+                      邮箱登录
                     </Button>
-                  )}
-                  {helperBotState.helperBotStatus === HelperBotStatus.OK && (
-                    <>
-                      {helperBotState.dailySigned ? (
-                        <Button disabled>功能冷却中</Button>
-                      ) : (
-                        <Button onClick={helperBotDailySign}>签到</Button>
-                      )}
-                    </>
-                  )}
-                  {!isUserAccount &&
-                    helperBotState.helperBotStatus === HelperBotStatus.OK && (
+                    <Button
+                      bg={'grape'}
+                      onClick={() => {
+                        helperBotPhoneLoginAccount();
+                      }}
+                    >
+                      手机号登录
+                    </Button>
+                  </Group>
+                </>
+              )}
+              {helperBotState.helperBotStatus ===
+                HelperBotStatus.NEED_REALNAME && (
+                <>
+                  <Text>（未实名）</Text>
+                  <Group gap={'sm'} pt={'sm'}>
+                    <Button onClick={refreshHelperBotStatus}>刷新状态</Button>
+                    <Button
+                      onClick={() => {
+                        window.open(realnameUrl.current, '_blank');
+                      }}
+                    >
+                      前往实名
+                    </Button>
+                  </Group>
+                </>
+              )}
+              {helperBotState.helperBotStatus >=
+                HelperBotStatus.NEED_SET_NICKNAME && (
+                <>
+                  <Text>
+                    {helperBotState.nickname
+                      ? helperBotState.nickname
+                      : '（未设置昵称）'}{' '}
+                    <Text span>
+                      (Lv.
+                      {helperBotState.level > 0
+                        ? `${helperBotState.level}, ${helperBotState.exp}/${helperBotState.need_exp}`
+                        : '-'}
+                      )
+                    </Text>
+                    {!isUserAccount && (
+                      <Text>
+                        皮肤支持：已
+                        {helperBotState.enableSkin ? '启用' : '关闭'}
+                      </Text>
+                    )}
+                  </Text>
+                  <Group gap={'sm'} pt={'sm'}>
+                    <Button onClick={refreshHelperBotStatus}>刷新状态</Button>
+                    {!isUserAccount && (
                       <Button
-                        bg="indigo"
-                        onClick={() =>
-                          helperBotSwitchEnableSkin(!helperBotState.enableSkin)
-                        }
+                        onClick={() => {
+                          helperBotSetNickname();
+                        }}
                       >
-                        {!helperBotState.enableSkin ? '启用' : '关闭'}皮肤支持
+                        设置昵称
                       </Button>
                     )}
-                  {isUserAccount && (
-                    <Button
-                      bg="red"
-                      onClick={() => {
-                        dropUserGameAccount();
-                      }}
-                    >
-                      退出登录
-                    </Button>
-                  )}
-                </Group>
-              </>
-            )}
-          </>
-        ) : (
-          <Text size={'sm'} fs={'italic'}>
-            请稍等，正在加载。。。
-          </Text>
-        )}
+                    {helperBotState.helperBotStatus === HelperBotStatus.OK && (
+                      <>
+                        {helperBotState.dailySigned ? (
+                          <Button disabled>功能冷却中</Button>
+                        ) : (
+                          <Button onClick={helperBotDailySign}>签到</Button>
+                        )}
+                      </>
+                    )}
+                    {!isUserAccount &&
+                      helperBotState.helperBotStatus === HelperBotStatus.OK && (
+                        <Button
+                          bg="indigo"
+                          onClick={() =>
+                            helperBotSwitchEnableSkin(
+                              !helperBotState.enableSkin,
+                            )
+                          }
+                        >
+                          {!helperBotState.enableSkin ? '启用' : '关闭'}皮肤支持
+                        </Button>
+                      )}
+                    {isUserAccount && (
+                      <Button
+                        bg="red"
+                        onClick={() => {
+                          dropUserGameAccount();
+                        }}
+                      >
+                        退出登录
+                      </Button>
+                    )}
+                  </Group>
+                </>
+              )}
+            </>
+          ) : (
+            <Text size={'sm'} fs={'italic'}>
+              请稍等，正在加载。。。
+            </Text>
+          )}
+        </Stack>
+      </MV4Card>
+    </Box>
+  );
+}
+
+function CaptchaModal({
+  opened,
+  onClose,
+  initSuccess,
+}: {
+  opened: boolean;
+  onClose: () => void;
+  initSuccess: boolean;
+}) {
+  return (
+    <Modal
+      opened={opened}
+      onClose={onClose}
+      title="请完成验证码"
+      centered={true}
+    >
+      <Stack align="center" justify="center">
+        {!initSuccess && <Text size="sm">验证码加载中</Text>}
+        <div id="tac-box-shop" />
       </Stack>
-    </MV4Card>
+    </Modal>
   );
 }
