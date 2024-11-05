@@ -2,43 +2,48 @@ import {
   Alert,
   Box,
   Button,
-  Grid,
   Group,
   Modal,
-  PasswordInput,
   Stack,
   Text,
   TextInput,
   Title,
 } from '@mantine/core';
-import { Caution, Key, MessageSecurity, Phone, User } from '@icon-park/react';
+import { Caution, User } from '@icon-park/react';
 import { useEffect, useRef, useState } from 'react';
 import { notifications } from '@mantine/notifications';
 import { modals } from '@mantine/modals';
-import { MD5 } from 'crypto-js';
 import { useDisclosure } from '@mantine/hooks';
 import { HelperBotStatus } from '@/api/helper_bot';
 import { mv4RequestApi } from '@/api/mv4Client';
 import { MV4RequestError } from '@/api/base';
 import MV4Card from '@/ui/component/app/MV4Card';
-import { awaitSleep } from '@/utils/asyncUtils';
-import initTianAiCaptcha from '@/utils/tianAiCaptcha';
+import EmailLoginModal from '@/ui/component/manage/helperBotLoginModals/EmailLoginModal';
+import PhoneLoginModal from '@/ui/component/manage/helperBotLoginModals/PhoneLoginModal';
+
+export interface HelperBotCardState {
+  loaded: boolean;
+  helperBotStatus: HelperBotStatus;
+  nickname: string;
+  dailySigned: boolean;
+  level: number;
+  exp: number;
+  need_exp: number;
+  enableSkin: boolean;
+}
+
+export interface DisclosureInterface {
+  readonly open: () => void;
+  readonly close: () => void;
+  readonly toggle: () => void;
+}
 
 export default function HelperBotCard({
   isUserAccount = false,
 }: {
   isUserAccount?: boolean;
 }) {
-  const [helperBotState, setHelperBotState] = useState<{
-    loaded: boolean;
-    helperBotStatus: HelperBotStatus;
-    nickname: string;
-    dailySigned: boolean;
-    level: number;
-    exp: number;
-    need_exp: number;
-    enableSkin: boolean;
-  }>({
+  const [helperBotState, setHelperBotState] = useState<HelperBotCardState>({
     loaded: false,
     helperBotStatus: HelperBotStatus.NEED_INIT,
     nickname: '',
@@ -55,14 +60,12 @@ export default function HelperBotCard({
   const realnameUrl = useRef('');
 
   const gameNickname = useRef('');
-  const gameAccount = useRef('');
-  const gamePassword = useRef('');
-
-  const gamePhoneNum = useRef('');
-  const gameVerifySMSCode = useRef('');
 
   const [captchaModalOpened, captchaModalActions] = useDisclosure(false);
   const [captchaInitSuccess, setCaptchaInitSuccess] = useState(false);
+
+  const [emailLoginOpened, emailLoginActions] = useDisclosure(false);
+  const [phoneLoginOpened, phoneLoginActions] = useDisclosure(false);
 
   const BASE_PATH = isUserAccount ? '/game-account' : '/helper-bot';
   const CARD_NAME = isUserAccount ? '游戏账号' : '辅助用户';
@@ -189,343 +192,12 @@ export default function HelperBotCard({
 
   async function helperBotLoginAccount() {
     setHasErr(false);
-    modals.open({
-      title: '邮箱登录',
-      closeOnEscape: false,
-      closeOnClickOutside: false,
-      children: (
-        <Stack>
-          <TextInput
-            label="账号"
-            leftSection={<User />}
-            placeholder="example@example.com"
-            onChange={e => {
-              gameAccount.current = e.currentTarget.value;
-            }}
-          />
-          <PasswordInput
-            label="密码"
-            leftSection={<Key />}
-            onChange={e => {
-              gamePassword.current = e.currentTarget.value;
-            }}
-          />
-          <Button
-            fullWidth
-            onClick={() => {
-              onClickLoginAccount();
-            }}
-            mt="md"
-          >
-            登录
-          </Button>
-        </Stack>
-      ),
-    });
+    emailLoginActions.open();
   }
 
   async function helperBotPhoneLoginAccount() {
     setHasErr(false);
-    modals.open({
-      title: '手机号登录',
-      closeOnEscape: false,
-      closeOnClickOutside: false,
-      children: (
-        <Stack>
-          <Grid gutter="xs" justify="flex-start" align="stretch">
-            <Grid.Col span={12}>
-              <TextInput
-                label="手机号"
-                leftSection={<Phone />}
-                onChange={e => {
-                  gamePhoneNum.current = e.currentTarget.value;
-                }}
-              />
-            </Grid.Col>
-            <Grid.Col span={8}>
-              <TextInput
-                label="验证码"
-                leftSection={<MessageSecurity />}
-                onChange={e => {
-                  gameVerifySMSCode.current = e.currentTarget.value;
-                }}
-              />
-            </Grid.Col>
-            <Grid.Col span={4} display="flex">
-              <Button
-                size="sm"
-                onClick={() => {
-                  onClickPhoneLoginSendSMS();
-                }}
-                style={{
-                  alignSelf: 'flex-end',
-                }}
-              >
-                获取验证码
-              </Button>
-            </Grid.Col>
-          </Grid>
-          <Button
-            fullWidth
-            onClick={() => {
-              onClickPhoneLoginAccount();
-            }}
-            mt="md"
-          >
-            登录
-          </Button>
-        </Stack>
-      ),
-    });
-  }
-
-  async function onClickLoginAccount() {
-    if (gameAccount.current.length === 0) {
-      notifications.show({
-        message: '账号不得为空',
-        color: 'red',
-      });
-    }
-    if (gamePassword.current.length === 0) {
-      notifications.show({
-        message: '密码不得为空',
-        color: 'red',
-      });
-    }
-    try {
-      const ret = await mv4RequestApi<
-        any,
-        {
-          needRealname: boolean;
-          realnameMessage: string;
-          realnameUrl: string;
-          status: HelperBotStatus;
-          nickname: string;
-          dailySigned: boolean;
-          enableSkin: boolean;
-        }
-      >({
-        path: `${BASE_PATH}/setup/login-account`,
-        data: {
-          account: gameAccount.current,
-          password_md5: MD5(gamePassword.current).toString(),
-        },
-      });
-      if (ret.data.needRealname) {
-        setHasErr(true);
-        setErrReason(ret.data.realnameMessage);
-        realnameUrl.current = ret.data.realnameUrl;
-      } else {
-        notifications.show({
-          message: '操作成功',
-        });
-      }
-      setHelperBotState({
-        loaded: true,
-        helperBotStatus: ret.data.status,
-        nickname: ret.data.nickname,
-        dailySigned: ret.data.dailySigned,
-        level: helperBotState.level,
-        exp: helperBotState.exp,
-        need_exp: helperBotState.need_exp,
-        enableSkin: helperBotState.enableSkin,
-      });
-      gameAccount.current = '';
-      gamePassword.current = '';
-      modals.closeAll();
-    } catch (e) {
-      console.error(e);
-      if (e instanceof MV4RequestError || e instanceof Error) {
-        setHasErr(true);
-        setErrReason(e.message);
-      }
-      modals.closeAll();
-    }
-  }
-
-  async function onClickPhoneLoginSendSMS() {
-    if (gamePhoneNum.current.length === 0) {
-      notifications.show({
-        message: '手机号不得为空',
-        color: 'red',
-      });
-      return;
-    }
-    setCaptchaInitSuccess(false);
-    captchaModalActions.open();
-    await awaitSleep(100);
-    initTianAiCaptcha('#tac-box-shop', {
-      onSuccess: async token => {
-        captchaModalActions.close();
-        try {
-          const ret = await mv4RequestApi<
-            any,
-            {
-              reqSucc: boolean;
-              msg: string;
-              sms_content: string;
-              need_code: boolean;
-            }
-          >({
-            path: `${BASE_PATH}/setup/phone-request-sms`,
-            data: {
-              phoneNumber: gamePhoneNum.current,
-              captcha_token: token,
-            },
-          });
-          if (!ret.data.reqSucc) {
-            onRequestSMSFailed(
-              ret.data.msg,
-              ret.data.sms_content,
-              ret.data.need_code,
-            );
-            return;
-          }
-          notifications.show({
-            message: '已请求验证码，请注意查收',
-          });
-        } catch (e) {
-          console.error(e);
-          if (e instanceof MV4RequestError || e instanceof Error) {
-            modals.open({
-              title: '验证码请求失败',
-              closeOnEscape: false,
-              closeOnClickOutside: false,
-              children: (
-                <Box>
-                  <Text>{e.message}</Text>
-                </Box>
-              ),
-            });
-          }
-        }
-      },
-      onClickClose: () => {
-        captchaModalActions.close();
-      },
-      onInitialize: () => {
-        setCaptchaInitSuccess(true);
-      },
-    });
-  }
-
-  async function onRequestSMSFailed(
-    msg: string,
-    sms_content: string,
-    need_code: boolean,
-  ) {
-    modals.openConfirmModal({
-      title: '验证码请求失败',
-      closeOnEscape: false,
-      closeOnClickOutside: false,
-      children: (
-        <Box>
-          <Text size="sm">{msg}</Text>
-        </Box>
-      ),
-      labels: { confirm: '我已发送', cancel: '取消' },
-      onConfirm: async () => {
-        if (need_code) {
-          return;
-        }
-        const _state = helperBotState;
-        _state.loaded = false;
-        setHelperBotState(_state);
-        notifications.show({
-          message: '请稍等',
-        });
-        modals.closeAll();
-        await basePhoneLoginAccount(gamePhoneNum.current, 'NULL', sms_content);
-      },
-    });
-  }
-
-  async function onClickPhoneLoginAccount() {
-    if (gamePhoneNum.current.length === 0) {
-      notifications.show({
-        message: '手机号不得为空',
-        color: 'red',
-      });
-      return;
-    }
-    if (gameVerifySMSCode.current.length === 0) {
-      notifications.show({
-        message: '验证码不得为空',
-        color: 'red',
-      });
-      return;
-    }
-    await basePhoneLoginAccount(
-      gamePhoneNum.current,
-      gameVerifySMSCode.current,
-    );
-  }
-
-  async function basePhoneLoginAccount(
-    phoneNum: string,
-    smsCode: string,
-    smsContent = '',
-  ) {
-    const _DATA: {
-      phoneNumber: string;
-      code: string;
-      sms_content?: string;
-    } = {
-      phoneNumber: phoneNum,
-      code: smsCode,
-    };
-    if (smsContent.length > 0) {
-      _DATA.sms_content = smsContent;
-    }
-    try {
-      const ret = await mv4RequestApi<
-        any,
-        {
-          needRealname: boolean;
-          realnameMessage: string;
-          realnameUrl: string;
-          status: HelperBotStatus;
-          nickname: string;
-          dailySigned: boolean;
-          enableSkin: boolean;
-        }
-      >({
-        path: `${BASE_PATH}/setup/phone-verify-sms`,
-        data: _DATA,
-      });
-      if (ret.data.needRealname) {
-        setHasErr(true);
-        setErrReason(ret.data.realnameMessage);
-        realnameUrl.current = ret.data.realnameUrl;
-      } else {
-        notifications.show({
-          message: '操作成功',
-        });
-      }
-      setHelperBotState({
-        loaded: true,
-        helperBotStatus: ret.data.status,
-        nickname: ret.data.nickname,
-        dailySigned: ret.data.dailySigned,
-        level: helperBotState.level,
-        exp: helperBotState.exp,
-        need_exp: helperBotState.need_exp,
-        enableSkin: helperBotState.enableSkin,
-      });
-      gamePhoneNum.current = '';
-      gameVerifySMSCode.current = '';
-      modals.closeAll();
-    } catch (e) {
-      const _state = helperBotState;
-      _state.loaded = true;
-      setHelperBotState(_state);
-      modals.closeAll();
-      console.error(e);
-      if (e instanceof MV4RequestError || e instanceof Error) {
-        setHasErr(true);
-        setErrReason(e.message);
-      }
-    }
+    phoneLoginActions.open();
   }
 
   async function helperBotSetNickname() {
@@ -762,6 +434,28 @@ export default function HelperBotCard({
 
   return (
     <Box>
+      <EmailLoginModal
+        opened={emailLoginOpened}
+        onClose={emailLoginActions.close}
+        setHasErr={setHasErr}
+        setErrReason={setErrReason}
+        helperBotState={helperBotState}
+        setHelperBotState={setHelperBotState}
+        realnameUrl={realnameUrl}
+        BasePath={BASE_PATH}
+      />
+      <PhoneLoginModal
+        opened={phoneLoginOpened}
+        onClose={phoneLoginActions.close}
+        setHasErr={setHasErr}
+        setErrReason={setErrReason}
+        helperBotState={helperBotState}
+        setHelperBotState={setHelperBotState}
+        setCaptchaInitSuccess={setCaptchaInitSuccess}
+        captchaModalActions={captchaModalActions}
+        realnameUrl={realnameUrl}
+        BasePath={BASE_PATH}
+      />
       <CaptchaModal
         opened={captchaModalOpened}
         onClose={captchaModalActions.close}
