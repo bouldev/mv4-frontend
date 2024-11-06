@@ -119,7 +119,16 @@ export default function OrderPage() {
                                     {getOrderStatusString(item.orderStatus)}
                                   </Text>
                                   <Text size="sm">
-                                    订单备注：{item.desc ? item.desc : '（无）'}
+                                    订单备注：
+                                    <Text
+                                      span
+                                      size="sm"
+                                      dangerouslySetInnerHTML={{
+                                        __html: item.desc
+                                          ? item.desc.replaceAll('\n', '<br/>')
+                                          : '（无）',
+                                      }}
+                                    />
                                   </Text>
                                   <Text size="sm">订单号：{item.orderNo}</Text>
                                   <Text size="sm">

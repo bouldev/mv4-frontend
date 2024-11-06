@@ -368,16 +368,18 @@ export default function ShopPage() {
                 }}
               />
             )}
-            <Checkbox
-              label="批量购买"
-              checked={enableSetBuyAmount}
-              onChange={event => {
-                if (!event.currentTarget.checked) {
-                  setCurrentSetBuyAmountInput(1);
-                }
-                setEnableSetBuyAmount(event.currentTarget.checked);
-              }}
-            />
+            {!currentProduct.canPayDirectly && (
+              <Checkbox
+                label="批量购买"
+                checked={enableSetBuyAmount}
+                onChange={event => {
+                  if (!event.currentTarget.checked) {
+                    setCurrentSetBuyAmountInput(1);
+                  }
+                  setEnableSetBuyAmount(event.currentTarget.checked);
+                }}
+              />
+            )}
             {enableSetBuyAmount && (
               <NumberInput
                 label="购买件数"

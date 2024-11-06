@@ -415,7 +415,7 @@ export default function SlotManageCard() {
           <Text size="sm">
             绑定的
             {thisSlot.dataType === ServerSlotDataType.PLAYER_ID_SLOT &&
-              '玩家昵称'}
+              '玩家UID'}
             {thisSlot.dataType === ServerSlotDataType.SERVER_ID_SLOT &&
               '租赁服号'}
             ：{thisSlot.data}
@@ -499,7 +499,7 @@ export default function SlotManageCard() {
                       }}
                     >
                       {item.expire !== -1 ? (
-                        <Stack gap={'xs'}>
+                        <Stack gap={0} p={0}>
                           <Text size={'sm'}>
                             #{(activePage - 1) * PAGE_MAX_ITEMS + i + 1}{' '}
                             {item.expireToClean && (
@@ -512,15 +512,23 @@ export default function SlotManageCard() {
                             {item.dataType ===
                               ServerSlotDataType.SERVER_ID_SLOT && '租赁服'}
                             ：{item.data}
+                            {item.mark && (
+                              <Text span size="sm">
+                                {' '}
+                                ({item.mark})
+                              </Text>
+                            )}
                           </Text>
-                          {item.mark && <Text size="sm">({item.mark})</Text>}
+                          <Text size="xs">
+                            总时长：{getDurationChineseString(item.slotTime)}
+                          </Text>
                           <Text size={'xs'}>
                             {item.expire < nowUnix() ? '已过期' : '过期时间'}：
                             {formatTime(item.expire, true)}
                           </Text>
                         </Stack>
                       ) : (
-                        <Group gap={0} p={0}>
+                        <Stack gap={0} p={0}>
                           <Text size={'sm'}>
                             #{(activePage - 1) * PAGE_MAX_ITEMS + i + 1}{' '}
                             {item.expireToClean && (
@@ -535,7 +543,10 @@ export default function SlotManageCard() {
                               '租赁服 SLOT'}{' '}
                             (未使用)
                           </Text>
-                        </Group>
+                          <Text size="xs">
+                            总时长：{getDurationChineseString(item.slotTime)}
+                          </Text>
+                        </Stack>
                       )}
                       <Group>
                         {item.expire < nowUnix() && item.expire !== -1 && (
