@@ -11,8 +11,8 @@ import {
 } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import { useLocalModel, useModel } from '@modern-js/runtime/model';
-import { Moon, SunOne, Theme } from '@icon-park/react';
 import { modals } from '@mantine/modals';
+import { IconMoonStars, IconShirt, IconSun } from '@tabler/icons-react';
 import css from './page.module.css';
 import RegisterForm from './component/RegisterForm';
 import BindEmailForm from './component/BindEmailForm';
@@ -153,14 +153,15 @@ export default function LoginPage() {
               }
             }}
           >
-            <Theme />
+            <IconShirt />
           </ActionIcon>
           <ActionIcon
             variant="default"
             size="xl"
             onClick={() => toggleColorScheme()}
           >
-            {colorScheme === 'light' ? <Moon /> : <SunOne />}
+            {/* auto: IconSunMoon */}
+            {colorScheme === 'light' ? <IconMoonStars /> : <IconSun />}
           </ActionIcon>
         </Flex>
         <Box className={css.wrapper}>

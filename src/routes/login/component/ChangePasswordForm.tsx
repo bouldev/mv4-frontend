@@ -12,11 +12,16 @@ import {
 import { useForm } from '@mantine/form';
 // import Turnstile from 'react-turnstile';
 import { useState } from 'react';
-import { Caution, Check, Key } from '@icon-park/react';
 import SHA256 from 'crypto-js/sha256';
 import { modals } from '@mantine/modals';
 import { useNavigate } from '@modern-js/runtime/router';
 import { useModel } from '@modern-js/runtime/model';
+import {
+  IconAlertTriangleFilled,
+  IconCheck,
+  IconLock,
+  IconPassword,
+} from '@tabler/icons-react';
 import {
   LoginActionType,
   LoginSwitchStateFunc,
@@ -153,7 +158,7 @@ export default function ChangePasswordForm({
           <Alert
             color="red"
             title="操作失败"
-            icon={<Caution />}
+            icon={<IconAlertTriangleFilled />}
             hidden={!hasErr}
           >
             <Text size={'sm'} fw={700}>
@@ -163,21 +168,21 @@ export default function ChangePasswordForm({
           <PasswordInput
             label="原密码"
             disabled={showLoading}
-            leftSection={<Key />}
+            leftSection={<IconLock />}
             key={form.key('password')}
             {...form.getInputProps('password', { type: 'input' })}
           />
           <PasswordInput
             label="新密码"
             disabled={showLoading}
-            leftSection={<Key />}
+            leftSection={<IconPassword />}
             key={form.key('new_password')}
             {...form.getInputProps('new_password', { type: 'input' })}
           />
           <PasswordInput
             label="再次输入新密码"
             disabled={showLoading}
-            leftSection={<Key />}
+            leftSection={<IconPassword />}
             key={form.key('new_password_again')}
             {...form.getInputProps('new_password_again', { type: 'input' })}
           />
@@ -200,7 +205,7 @@ export default function ChangePasswordForm({
               返回
             </Anchor>
             <Button
-              leftSection={<Check />}
+              leftSection={<IconCheck />}
               type={'submit'}
               variant="filled"
               disabled={!btnEnabled}

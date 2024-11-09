@@ -13,11 +13,16 @@ import {
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useState } from 'react';
-import { Caution, Key, Login, User } from '@icon-park/react';
 import SHA256 from 'crypto-js/sha256';
 import { useNavigate } from '@modern-js/runtime/router';
 import { notifications } from '@mantine/notifications';
 import { useModel } from '@modern-js/runtime/model';
+import {
+  IconAlertTriangleFilled,
+  IconLogin,
+  IconPassword,
+  IconUser,
+} from '@tabler/icons-react';
 import css from '@/routes/login/page.module.css';
 import {
   LoginActionType,
@@ -124,7 +129,7 @@ export default function LoginForm({
           <Alert
             color="red"
             title="登录失败"
-            icon={<Caution />}
+            icon={<IconAlertTriangleFilled />}
             hidden={!hasErr}
           >
             <Text size={'sm'} fw={700}>
@@ -134,14 +139,14 @@ export default function LoginForm({
           <TextInput
             label="用户名"
             disabled={showLoading}
-            leftSection={<User />}
+            leftSection={<IconUser />}
             key={form.key('username')}
             {...form.getInputProps('username')}
           />
           <PasswordInput
             label="密码"
             disabled={showLoading}
-            leftSection={<Key />}
+            leftSection={<IconPassword />}
             key={form.key('password')}
             {...form.getInputProps('password', { type: 'input' })}
           />
@@ -168,7 +173,7 @@ export default function LoginForm({
               </Anchor>
             </Flex>
             <Button
-              leftSection={<Login />}
+              leftSection={<IconLogin />}
               type={'submit'}
               variant="filled"
               disabled={!btnEnabled}

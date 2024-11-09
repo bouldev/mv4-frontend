@@ -25,7 +25,6 @@
     "dist/"
   ],
   "dependencies": {
-    "@icon-park/react": "^1.4.2",
     "@mantine/code-highlight": "^7.9.0",
     "@mantine/core": "^7.11.1",
     "@mantine/dates": "^7.9.0",
@@ -39,6 +38,7 @@
     "@modern-js/runtime": "2.49.2",
     "@pansy/react-watermark": "^3.1.14",
     "@pansy/watermark": "^2.3.0",
+    "@tabler/icons-react": "^3.21.0",
     "@tiptap/extension-color": "^2.4.0",
     "@tiptap/extension-highlight": "^2.4.0",
     "@tiptap/extension-link": "^2.4.0",

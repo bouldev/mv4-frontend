@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { notifications } from '@mantine/notifications';
 import { MD5 } from 'crypto-js';
 import { Button, Modal, PasswordInput, Stack, TextInput } from '@mantine/core';
-import { Key, User } from '@icon-park/react';
+import { IconLock, IconUser } from '@tabler/icons-react';
 import { mv4RequestApi } from '@/api/mv4Client';
 import { HelperBotStatus } from '@/api/helper_bot';
 import { MV4RequestError } from '@/api/base';
@@ -105,7 +105,7 @@ export default function EmailLoginModal({
       <Stack>
         <TextInput
           label="账号"
-          leftSection={<User />}
+          leftSection={<IconUser />}
           value={gameAccount}
           placeholder="example@example.com"
           onChange={e => {
@@ -114,7 +114,7 @@ export default function EmailLoginModal({
         />
         <PasswordInput
           label="密码"
-          leftSection={<Key />}
+          leftSection={<IconLock />}
           value={gamePassword}
           onChange={e => {
             setGamePassword(e.currentTarget.value);

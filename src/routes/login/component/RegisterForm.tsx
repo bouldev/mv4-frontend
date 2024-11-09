@@ -14,9 +14,14 @@ import {
 import { useForm } from '@mantine/form';
 // import Turnstile from 'react-turnstile';
 import { useState } from 'react';
-import { Caution, Check, Key, User } from '@icon-park/react';
 import SHA256 from 'crypto-js/sha256';
 import { notifications } from '@mantine/notifications';
+import {
+  IconAlertTriangleFilled,
+  IconPassword,
+  IconUser,
+  IconUserShare,
+} from '@tabler/icons-react';
 import css from '@/routes/login/page.module.css';
 import {
   LoginActionType,
@@ -152,7 +157,7 @@ export default function RegisterForm({
           <Alert
             color="red"
             title="操作失败"
-            icon={<Caution />}
+            icon={<IconAlertTriangleFilled />}
             hidden={!hasErr}
           >
             <Text size={'sm'} fw={700}>
@@ -162,21 +167,21 @@ export default function RegisterForm({
           <TextInput
             label="用户名"
             disabled={showLoading}
-            leftSection={<User />}
+            leftSection={<IconUser />}
             key={form.key('username')}
             {...form.getInputProps('username')}
           />
           <PasswordInput
             label="密码"
             disabled={showLoading}
-            leftSection={<Key />}
+            leftSection={<IconPassword />}
             key={form.key('password')}
             {...form.getInputProps('password', { type: 'input' })}
           />
           <PasswordInput
             label="再次输入密码"
             disabled={showLoading}
-            leftSection={<Key />}
+            leftSection={<IconPassword />}
             key={form.key('password_again')}
             {...form.getInputProps('password_again', { type: 'input' })}
           />
@@ -228,7 +233,7 @@ export default function RegisterForm({
               返回登录
             </Anchor>
             <Button
-              leftSection={<Check />}
+              leftSection={<IconUserShare />}
               type={'submit'}
               variant="filled"
               disabled={!btnEnabled}

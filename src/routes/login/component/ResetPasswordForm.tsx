@@ -12,9 +12,13 @@ import {
 import { useForm } from '@mantine/form';
 // import Turnstile from 'react-turnstile';
 import { useState } from 'react';
-import { Caution, Check, Key } from '@icon-park/react';
 import SHA256 from 'crypto-js/sha256';
 import { modals } from '@mantine/modals';
+import {
+  IconAlertTriangleFilled,
+  IconCheck,
+  IconPassword,
+} from '@tabler/icons-react';
 import {
   LoginActionType,
   LoginSwitchStateFunc,
@@ -139,7 +143,7 @@ export default function ResetPasswordForm({
           <Alert
             color="red"
             title="操作失败"
-            icon={<Caution />}
+            icon={<IconAlertTriangleFilled />}
             hidden={!hasErr}
           >
             <Text size={'sm'} fw={700}>
@@ -154,14 +158,14 @@ export default function ResetPasswordForm({
           <PasswordInput
             label="密码"
             disabled={showLoading}
-            leftSection={<Key />}
+            leftSection={<IconPassword />}
             key={form.key('password')}
             {...form.getInputProps('password', { type: 'input' })}
           />
           <PasswordInput
             label="再次输入密码"
             disabled={showLoading}
-            leftSection={<Key />}
+            leftSection={<IconPassword />}
             key={form.key('password_again')}
             {...form.getInputProps('password_again', { type: 'input' })}
           />
@@ -184,7 +188,7 @@ export default function ResetPasswordForm({
               返回登录
             </Anchor>
             <Button
-              leftSection={<Check />}
+              leftSection={<IconCheck />}
               type={'submit'}
               variant="filled"
               disabled={!btnEnabled}

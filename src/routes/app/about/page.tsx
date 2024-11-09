@@ -52,15 +52,15 @@ export default function AboutPage() {
                 rel={'noreferrer'}
                 href={'https://mantine.dev/'}
               >
-                MantineUI
+                Mantine
               </Anchor>
               {', '}
               <Anchor
                 target={'_blank'}
                 rel={'noreferrer'}
-                href={'https://iconpark.oceanengine.com/'}
+                href={'https://tabler.io/icons'}
               >
-                IconPark
+                Tabler Icons
               </Anchor>
             </Text>
             <Text>

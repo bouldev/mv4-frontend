@@ -9,11 +9,11 @@ import {
   TextInput,
   Title,
 } from '@mantine/core';
-import { Caution, User } from '@icon-park/react';
 import { useEffect, useRef, useState } from 'react';
 import { notifications } from '@mantine/notifications';
 import { modals } from '@mantine/modals';
 import { useDisclosure } from '@mantine/hooks';
+import { IconAlertTriangleFilled, IconUser } from '@tabler/icons-react';
 import { HelperBotStatus } from '@/api/helper_bot';
 import { mv4RequestApi } from '@/api/mv4Client';
 import { MV4RequestError } from '@/api/base';
@@ -119,10 +119,9 @@ export default function HelperBotCard({
     } catch (e) {
       console.error(e);
       if (e instanceof MV4RequestError || e instanceof Error) {
-        notifications.show({
+        modals.open({
           title: `获取${CARD_NAME}状态失败`,
-          message: e.message,
-          color: 'red',
+          children: <Text size="sm">{e.message}</Text>,
         });
       }
     }
@@ -210,7 +209,7 @@ export default function HelperBotCard({
         <Stack>
           <TextInput
             label="新昵称"
-            leftSection={<User />}
+            leftSection={<IconUser />}
             onChange={e => {
               gameNickname.current = e.currentTarget.value;
             }}
@@ -500,7 +499,7 @@ export default function HelperBotCard({
           <Alert
             color="red"
             title="出现错误"
-            icon={<Caution />}
+            icon={<IconAlertTriangleFilled />}
             hidden={!hasErr}
           >
             <Text size={'sm'} fw={700}>

@@ -466,7 +466,7 @@ export default function SlotManageCard() {
             （没有SLOT）
           </Text>
         )}
-        {!cardLoading && (
+        {!cardLoading && slots.length > 0 && (
           <Text size={'sm'}>
             当前拥有 {slots.length} 个SLOT，正显示第{' '}
             {(activePage - 1) * PAGE_MAX_ITEMS + 1}~

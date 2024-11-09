@@ -10,7 +10,7 @@ import {
   Text,
   TextInput,
 } from '@mantine/core';
-import { MessageSecurity, Phone } from '@icon-park/react';
+import { IconDeviceMobile, IconDeviceMobileMessage } from '@tabler/icons-react';
 import { awaitSleep } from '@/utils/asyncUtils';
 import initTianAiCaptcha from '@/utils/tianAiCaptcha';
 import { mv4RequestApi } from '@/api/mv4Client';
@@ -243,7 +243,7 @@ export default function PhoneLoginModal({
           <Grid.Col span={12}>
             <TextInput
               label="手机号"
-              leftSection={<Phone />}
+              leftSection={<IconDeviceMobile />}
               value={gamePhoneNum}
               onChange={e => {
                 setGamePhoneNum(e.currentTarget.value);
@@ -253,7 +253,7 @@ export default function PhoneLoginModal({
           <Grid.Col span={{ base: 7, sm: 8 }}>
             <TextInput
               label="验证码"
-              leftSection={<MessageSecurity />}
+              leftSection={<IconDeviceMobileMessage />}
               value={gameVerifySMSCode}
               onChange={e => {
                 setGameVerifySMSCode(e.currentTarget.value);

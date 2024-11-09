@@ -12,8 +12,13 @@ import {
 import { useForm } from '@mantine/form';
 // import Turnstile from 'react-turnstile';
 import { useState } from 'react';
-import { Caution, Mail, SendEmail, User } from '@icon-park/react';
 import { modals } from '@mantine/modals';
+import {
+  IconAlertTriangleFilled,
+  IconMail,
+  IconMailForward,
+  IconUser,
+} from '@tabler/icons-react';
 import {
   LoginActionType,
   LoginSwitchStateFunc,
@@ -142,7 +147,7 @@ export default function ForgotPasswordForm({
           <Alert
             color="red"
             title="操作失败"
-            icon={<Caution />}
+            icon={<IconAlertTriangleFilled />}
             hidden={!hasErr}
           >
             <Text size={'sm'} fw={700}>
@@ -153,14 +158,14 @@ export default function ForgotPasswordForm({
           <TextInput
             label="用户名"
             disabled={showLoading}
-            leftSection={<User />}
+            leftSection={<IconUser />}
             key={form.key('username')}
             {...form.getInputProps('username')}
           />
           <TextInput
             label="邮箱"
             disabled={showLoading}
-            leftSection={<Mail />}
+            leftSection={<IconMail />}
             key={form.key('email')}
             {...form.getInputProps('email')}
           />
@@ -183,7 +188,7 @@ export default function ForgotPasswordForm({
               返回登录
             </Anchor>
             <Button
-              leftSection={<SendEmail />}
+              leftSection={<IconMailForward />}
               type={'submit'}
               variant="filled"
               disabled={!btnEnabled}

@@ -13,10 +13,15 @@ import {
 import { useForm } from '@mantine/form';
 // import Turnstile from 'react-turnstile';
 import { useState } from 'react';
-import { Caution, Key, Mail, SendEmail } from '@icon-park/react';
 import { modals } from '@mantine/modals';
 import { useNavigate } from '@modern-js/runtime/router';
 import SHA256 from 'crypto-js/sha256';
+import {
+  IconAlertTriangleFilled,
+  IconLock,
+  IconMail,
+  IconMailForward,
+} from '@tabler/icons-react';
 import css from '@/routes/login/page.module.css';
 // import { MV4_CLOUDFLARE_TURNSTILE_SITE_KEY } from '@/MV4GlobalConfig';
 import { mv4RequestApi } from '@/api/mv4Client';
@@ -137,7 +142,7 @@ export default function BindEmailForm() {
           <Alert
             color="red"
             title="操作失败"
-            icon={<Caution />}
+            icon={<IconAlertTriangleFilled />}
             hidden={!hasErr}
           >
             <Text size={'sm'} fw={700}>
@@ -147,7 +152,7 @@ export default function BindEmailForm() {
           <TextInput
             label="邮箱"
             disabled={showLoading}
-            leftSection={<Mail />}
+            leftSection={<IconMail />}
             key={form.key('email')}
             {...form.getInputProps('email')}
           />
@@ -155,7 +160,7 @@ export default function BindEmailForm() {
             label="输入密码以确认"
             placeholder="用户中心账号的密码"
             disabled={showLoading}
-            leftSection={<Key />}
+            leftSection={<IconLock />}
             key={form.key('password')}
             {...form.getInputProps('password', { type: 'input' })}
           />
@@ -178,7 +183,7 @@ export default function BindEmailForm() {
               返回
             </Anchor>
             <Button
-              leftSection={<SendEmail />}
+              leftSection={<IconMailForward />}
               type={'submit'}
               variant="filled"
               disabled={!btnEnabled}

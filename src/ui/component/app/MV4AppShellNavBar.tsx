@@ -8,29 +8,29 @@ import {
   Tabs,
   useMantineColorScheme,
 } from '@mantine/core';
-import {
-  Announcement,
-  Api,
-  Commodity,
-  Download,
-  EveryUser,
-  Help,
-  Logout,
-  Moon,
-  MoreApp,
-  Right,
-  Server,
-  Shop,
-  SunOne,
-  Theme,
-  Transaction,
-  TransactionOrder,
-  User,
-} from '@icon-park/react';
 import { useEffect, useState } from 'react';
 import { useModel } from '@modern-js/runtime/model';
 import { notifications } from '@mantine/notifications';
 import { useLocation, useNavigate } from '@modern-js/runtime/router';
+import {
+  IconApi,
+  IconBuildingStore,
+  IconCashRegister,
+  IconChartTreemap,
+  IconChevronRight,
+  IconDownload,
+  IconInfoCircle,
+  IconLogout,
+  IconMoonStars,
+  IconNews,
+  IconReceipt,
+  IconServerCog,
+  IconShirt,
+  IconShoppingBagEdit,
+  IconSun,
+  IconUser,
+  IconUserCog,
+} from '@tabler/icons-react';
 import { ThemeSwitchModel } from '@/model/UIModel';
 import { mv4RequestApi } from '@/api/mv4Client';
 import { GlobalUserModel } from '@/model/globalUserModel';
@@ -45,25 +45,29 @@ export default function MV4AppShellNavBar({
 }) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [navigateItemsUser, setNavigateItemsUser] = useState([
-    { name: '公告', link: '/app', icon: <Announcement /> },
-    { name: '管理', link: '/app/manage', icon: <MoreApp /> },
-    { name: '用户', link: '/app/user', icon: <User /> },
-    { name: '商店', link: '/app/shop', icon: <Shop /> },
-    { name: 'OpenAPI', link: '/app/openapi', icon: <Api /> },
-    { name: '下载', link: '/app/download', icon: <Download /> },
-    { name: '关于', link: '/app/about', icon: <Help /> },
+    { name: '公告', link: '/app', icon: <IconNews /> },
+    { name: '管理', link: '/app/manage', icon: <IconChartTreemap /> },
+    { name: '用户', link: '/app/user', icon: <IconUser /> },
+    { name: '商店', link: '/app/shop', icon: <IconBuildingStore /> },
+    { name: 'OpenAPI', link: '/app/openapi', icon: <IconApi /> },
+    { name: '下载', link: '/app/download', icon: <IconDownload /> },
+    { name: '关于', link: '/app/about', icon: <IconInfoCircle /> },
   ]);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [navigateItemsAdmin, setNavigateItemsAdmin] = useState([
-    { name: '用户管理', link: '/app/admin/user', icon: <EveryUser /> },
-    { name: '订单管理', link: '/app/admin/order', icon: <TransactionOrder /> },
-    { name: '商品管理', link: '/app/admin/item', icon: <Commodity /> },
-    { name: '服务配置', link: '/app/admin/service', icon: <Server /> },
+    { name: '用户管理', link: '/app/admin/user', icon: <IconUserCog /> },
+    { name: '订单管理', link: '/app/admin/order', icon: <IconReceipt /> },
+    {
+      name: '商品管理',
+      link: '/app/admin/item',
+      icon: <IconShoppingBagEdit />,
+    },
+    { name: '服务配置', link: '/app/admin/service', icon: <IconServerCog /> },
     {
       name: '发布公告',
       link: '/app/admin/publish-announcement',
-      icon: <Announcement />,
+      icon: <IconNews />,
     },
   ]);
 
@@ -109,7 +113,9 @@ export default function MV4AppShellNavBar({
                 label={value.name}
                 leftSection={value.icon}
                 rightSection={
-                  value.link === window.location.pathname && <Right />
+                  value.link === window.location.pathname && (
+                    <IconChevronRight />
+                  )
                 }
               />
             ))}
@@ -121,9 +127,11 @@ export default function MV4AppShellNavBar({
                 onClick={() => doNavigateTo('/app/cash')}
                 active={'/app/cash' === window.location.pathname}
                 label={'收银台'}
-                leftSection={<Transaction />}
+                leftSection={<IconCashRegister />}
                 rightSection={
-                  '/app/cash' === window.location.pathname && <Right />
+                  '/app/cash' === window.location.pathname && (
+                    <IconChevronRight />
+                  )
                 }
               />
             )}
@@ -137,7 +145,9 @@ export default function MV4AppShellNavBar({
                 label={value.name}
                 leftSection={value.icon}
                 rightSection={
-                  value.link === window.location.pathname && <Right />
+                  value.link === window.location.pathname && (
+                    <IconChevronRight />
+                  )
                 }
               />
             ))}
@@ -157,7 +167,7 @@ export default function MV4AppShellNavBar({
               }
             }}
           >
-            <Theme />
+            <IconShirt />
           </ActionIcon>
           <ActionIcon
             variant="default"
@@ -173,7 +183,8 @@ export default function MV4AppShellNavBar({
               });
             }}
           >
-            {colorScheme === 'light' ? <Moon /> : <SunOne />}
+            {/* auto: IconSunMoon */}
+            {colorScheme === 'light' ? <IconMoonStars /> : <IconSun />}
           </ActionIcon>
           <ActionIcon
             variant="default"
@@ -192,7 +203,7 @@ export default function MV4AppShellNavBar({
               } catch {}
             }}
           >
-            <Logout />
+            <IconLogout />
           </ActionIcon>
         </Flex>
       </AppShell.Section>
