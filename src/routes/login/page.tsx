@@ -1,5 +1,4 @@
 import {
-  ActionIcon,
   Box,
   Flex,
   Paper,
@@ -12,7 +11,7 @@ import {
 import { useEffect, useState } from 'react';
 import { useLocalModel, useModel } from '@modern-js/runtime/model';
 import { modals } from '@mantine/modals';
-import { IconMoonStars, IconShirt, IconSun } from '@tabler/icons-react';
+import { useColorScheme } from '@mantine/hooks';
 import css from './page.module.css';
 import RegisterForm from './component/RegisterForm';
 import BindEmailForm from './component/BindEmailForm';
@@ -30,17 +29,29 @@ import BindEmailSuccessForm from '@/routes/login/component/BindEmailSuccessForm'
 import { MV4RequestError } from '@/api/base';
 import ChangePasswordForm from '@/routes/login/component/ChangePasswordForm';
 import { GlobalUserModel } from '@/model/globalUserModel';
+import { ThemeButtons } from '@/ui/component/ThemeButtons';
 
 export default function LoginPage() {
   const [paperOpened, setPaperOpened] = useState(false);
   const [formShowed, setFormShowed] = useState(true);
 
-  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
+  const { colorScheme } = useMantineColorScheme();
+  const systemColorScheme = useColorScheme();
 
   const [state, actions] = useLocalModel(LoginActionTypeSwitchModel);
 
-  const [themeState, themeActions] = useModel(ThemeSwitchModel);
+  const [themeState] = useModel(ThemeSwitchModel);
   const [userModelState] = useModel(GlobalUserModel);
+
+  function getCurrentCS() {
+    switch (colorScheme) {
+      case 'auto': {
+        return systemColorScheme;
+      }
+      default:
+        return colorScheme;
+    }
+  }
 
   useEffect(() => {
     (async () => {
@@ -136,33 +147,13 @@ export default function LoginPage() {
         className={`${bgCss.bg} ${bgCss.bgFixer} ${getThemeStyleCssName(
           themeState.style,
         )} ${
-          colorScheme === 'light' && themeState.style === 'anime'
-            ? bgCss.bgAnimeLight
-            : ''
+          getCurrentCS() === 'light' &&
+          themeState.style === 'anime' &&
+          bgCss.bgAnimeLight
         }`}
       >
         <Flex justify={'flex-end'} m={4} gap={'xs'}>
-          <ActionIcon
-            variant="default"
-            size="xl"
-            onClick={() => {
-              if (themeState.style === 'default') {
-                themeActions.changeStyle('anime');
-              } else {
-                themeActions.changeStyle('default');
-              }
-            }}
-          >
-            <IconShirt />
-          </ActionIcon>
-          <ActionIcon
-            variant="default"
-            size="xl"
-            onClick={() => toggleColorScheme()}
-          >
-            {/* auto: IconSunMoon */}
-            {colorScheme === 'light' ? <IconMoonStars /> : <IconSun />}
-          </ActionIcon>
+          <ThemeButtons />
         </Flex>
         <Box className={css.wrapper}>
           <div id="tac-box" className={css.tacBoxStyles} />
@@ -171,7 +162,7 @@ export default function LoginPage() {
               <Paper
                 style={styles}
                 className={`${css.loginCard} ${
-                  colorScheme === 'light' ? css.loginCardLight : ''
+                  getCurrentCS() === 'light' && css.loginCardLight
                 }`}
                 shadow="xl"
                 withBorder

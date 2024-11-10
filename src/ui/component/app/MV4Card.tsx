@@ -5,6 +5,7 @@ import {
   MantineStyleProp,
   useMantineColorScheme,
 } from '@mantine/core';
+import { useColorScheme } from '@mantine/hooks';
 import eleCss from '@/ui/css/elements.module.css';
 
 export default function MV4Card({
@@ -17,6 +18,17 @@ export default function MV4Card({
   style?: MantineStyleProp;
 }) {
   const { colorScheme } = useMantineColorScheme();
+  const systemColorScheme = useColorScheme();
+
+  function getCurrentCS() {
+    switch (colorScheme) {
+      case 'auto': {
+        return systemColorScheme;
+      }
+      default:
+        return colorScheme;
+    }
+  }
 
   return (
     <Card
@@ -25,7 +37,7 @@ export default function MV4Card({
       radius="md"
       withBorder
       className={`${eleCss.appShellBg} ${
-        colorScheme === 'light' ? eleCss.appShellBgLight : ''
+        getCurrentCS() === 'light' && eleCss.appShellBgLight
       }`}
       style={style}
     >

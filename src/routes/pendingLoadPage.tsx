@@ -5,13 +5,25 @@ import {
   LoadingOverlay,
 } from '@mantine/core';
 import { useModel } from '@modern-js/runtime/model';
+import { useColorScheme } from '@mantine/hooks';
 import bgCss from '@/ui/css/background.module.css';
 import { getThemeStyleCssName, ThemeSwitchModel } from '@/model/UIModel';
 
 export default function PendingLoadPage() {
   const { colorScheme } = useMantineColorScheme();
+  const systemColorScheme = useColorScheme();
 
   const [themeState] = useModel(ThemeSwitchModel);
+
+  function getCurrentCS() {
+    switch (colorScheme) {
+      case 'auto': {
+        return systemColorScheme;
+      }
+      default:
+        return colorScheme;
+    }
+  }
 
   return (
     <RemoveScroll>
@@ -19,9 +31,9 @@ export default function PendingLoadPage() {
         className={`${bgCss.bg} ${bgCss.bgFixer} ${getThemeStyleCssName(
           themeState.style,
         )} ${
-          colorScheme === 'light' && themeState.style === 'anime'
-            ? bgCss.bgAnimeLight
-            : ''
+          getCurrentCS() === 'light' &&
+          themeState.style === 'anime' &&
+          bgCss.bgAnimeLight
         }`}
       >
         <LoadingOverlay

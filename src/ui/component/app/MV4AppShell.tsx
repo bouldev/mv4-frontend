@@ -1,8 +1,7 @@
 import { ReactNode, useState } from 'react';
-import { useDisclosure, useElementSize } from '@mantine/hooks';
+import { useColorScheme, useDisclosure, useElementSize } from '@mantine/hooks';
 import {
   AppShell,
-  Box,
   Burger,
   Group,
   RemoveScroll,
@@ -27,6 +26,7 @@ export default function MV4AppShell({
 }) {
   const [opened, { toggle }] = useDisclosure();
   const { colorScheme } = useMantineColorScheme();
+  const systemColorScheme = useColorScheme();
   const [themeState] = useModel(ThemeSwitchModel);
 
   const [showMain, setShowMain] = useState(true);
@@ -45,13 +45,23 @@ export default function MV4AppShell({
     setShowMain(false);
   }
 
+  function getCurrentCS() {
+    switch (colorScheme) {
+      case 'auto': {
+        return systemColorScheme;
+      }
+      default:
+        return colorScheme;
+    }
+  }
+
   return (
     <RemoveScroll>
       <AppShell
         className={`${bgCss.bg} ${getThemeStyleCssName(themeState.style)} ${
-          colorScheme === 'light' && themeState.style === 'anime'
-            ? bgCss.bgAnimeLight
-            : ''
+          getCurrentCS() === 'light' &&
+          themeState.style === 'anime' &&
+          bgCss.bgAnimeLight
         }`}
         header={{ height: 60 }}
         navbar={{
@@ -63,7 +73,7 @@ export default function MV4AppShell({
       >
         <AppShell.Header
           className={`${css.appShellBg} ${
-            colorScheme === 'light' ? css.appShellBgLight : ''
+            getCurrentCS() === 'light' && css.appShellBgLight
           }`}
           ref={shellHeaderBarElementSize.ref}
         >
@@ -74,7 +84,7 @@ export default function MV4AppShell({
               hiddenFrom="sm"
               size="sm"
             />
-            {colorScheme === 'dark' ? (
+            {getCurrentCS() === 'dark' ? (
               <img src={FBLogoWhite} alt="FBLogoWhite" height={32} width={32} />
             ) : (
               <img src={FBLogoBlack} alt="FBLogoBlack" height={32} width={32} />
@@ -85,32 +95,32 @@ export default function MV4AppShell({
         <AppShell.Navbar
           p="sm"
           className={`${css.appShellBg} ${
-            colorScheme === 'light' ? css.appShellBgLight : ''
+            getCurrentCS() === 'light' && css.appShellBgLight
           }`}
         >
-          <MV4AppShellNavBar
-            toggleNavBar={toggle}
-            doNavigateTo={onNavigatePage}
-          />
+          <MV4AppShellNavBar doNavigateTo={onNavigatePage} />
         </AppShell.Navbar>
         <AppShell.Main style={{ display: 'flex', height: '100vh' }}>
-          <AppShell.Section grow component={ScrollArea} px={'md'}>
-            <Transition
-              mounted={showMain}
-              transition={'fade-up'}
-              onExited={() => {
-                navigate(pendingNavigate);
-                setShowMain(true);
-              }}
-            >
-              {styles => (
-                <Box py={'md'} style={styles}>
-                  {children}
-                </Box>
-              )}
-            </Transition>
-            <Space h={shellHeaderBarElementSize.height} />
-          </AppShell.Section>
+          <Transition
+            mounted={showMain}
+            transition={'fade-up'}
+            onExited={() => {
+              navigate(pendingNavigate);
+              setShowMain(true);
+            }}
+          >
+            {styles => (
+              <AppShell.Section
+                style={styles}
+                grow
+                component={ScrollArea}
+                p="md"
+              >
+                {children}
+                <Space h={shellHeaderBarElementSize.height} />
+              </AppShell.Section>
+            )}
+          </Transition>
         </AppShell.Main>
       </AppShell>
     </RemoveScroll>

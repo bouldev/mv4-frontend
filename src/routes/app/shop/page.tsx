@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  Card,
   Checkbox,
   Group,
   LoadingOverlay,
@@ -14,7 +13,6 @@ import {
   Text,
   TextInput,
   Title,
-  useMantineColorScheme,
 } from '@mantine/core';
 import { useEffect, useRef, useState } from 'react';
 import { notifications } from '@mantine/notifications';
@@ -22,7 +20,6 @@ import { useModel } from '@modern-js/runtime/model';
 import { useDisclosure } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
 import PageTitle from '@/ui/component/app/PageTitle';
-import eleCss from '@/ui/css/elements.module.css';
 import { MV4RequestError } from '@/api/base';
 import { MV4Product, MV4ProductCategory } from '@/api/product';
 import { mv4RequestApi } from '@/api/mv4Client';
@@ -31,7 +28,6 @@ import { MV4UserPermissionLevel } from '@/api/user';
 import MV4Card from '@/ui/component/app/MV4Card';
 
 export default function ShopPage() {
-  const { colorScheme } = useMantineColorScheme();
   const [activeTab, setActiveTab] = useState<string | null>(null);
   const [showLoading, setShowLoading] = useState(true);
   const [categoryList, setCategoryList] = useState<MV4ProductCategory[]>([]);
@@ -445,16 +441,7 @@ export default function ShopPage() {
         </Stack>
       </Modal>
       <PageTitle>商店</PageTitle>
-      <Card
-        shadow="xl"
-        padding="sm"
-        radius="md"
-        withBorder
-        className={`${eleCss.appShellBg} ${
-          colorScheme === 'light' ? eleCss.appShellBgLight : ''
-        }`}
-        mih={'450px'}
-      >
+      <MV4Card style={{ minHeight: '450px' }}>
         <LoadingOverlay
           visible={showLoading}
           overlayProps={{ radius: 'sm', blur: 2 }}
@@ -489,7 +476,7 @@ export default function ShopPage() {
             })}
           </Stack>
         </Tabs>
-      </Card>
+      </MV4Card>
       <MV4Card>
         <Stack gap={'md'}>
           <Title order={4}>兑换码</Title>

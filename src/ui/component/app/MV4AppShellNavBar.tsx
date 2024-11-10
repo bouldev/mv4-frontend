@@ -6,7 +6,6 @@ import {
   ScrollArea,
   Stack,
   Tabs,
-  useMantineColorScheme,
 } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import { useModel } from '@modern-js/runtime/model';
@@ -21,27 +20,22 @@ import {
   IconDownload,
   IconInfoCircle,
   IconLogout,
-  IconMoonStars,
   IconNews,
   IconReceipt,
   IconServerCog,
-  IconShirt,
   IconShoppingBagEdit,
-  IconSun,
   IconUser,
   IconUserCog,
 } from '@tabler/icons-react';
-import { ThemeSwitchModel } from '@/model/UIModel';
 import { mv4RequestApi } from '@/api/mv4Client';
 import { GlobalUserModel } from '@/model/globalUserModel';
 import { MV4UserPermissionLevel } from '@/api/user';
+import { ThemeButtons } from '@/ui/component/ThemeButtons';
 
 export default function MV4AppShellNavBar({
   doNavigateTo,
-  toggleNavBar,
 }: {
   doNavigateTo: (path: string) => void;
-  toggleNavBar: VoidFunction;
 }) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [navigateItemsUser, setNavigateItemsUser] = useState([
@@ -73,10 +67,6 @@ export default function MV4AppShellNavBar({
 
   const [activeTab, setActiveTab] = useState<string | null>('user');
 
-  const { colorScheme, toggleColorScheme } = useMantineColorScheme({
-    keepTransitions: true,
-  });
-  const [themeState, themeActions] = useModel(ThemeSwitchModel);
   const [userModelState, userModelActions] = useModel(GlobalUserModel);
 
   const navigate = useNavigate();
@@ -155,40 +145,10 @@ export default function MV4AppShellNavBar({
       </AppShell.Section>
       <AppShell.Section>
         <Flex justify={'flex-start'} m={4} gap={'xs'}>
+          <ThemeButtons />
           <ActionIcon
-            variant="default"
-            size="xl"
-            onClick={() => {
-              toggleNavBar();
-              if (themeState.style === 'default') {
-                themeActions.changeStyle('anime');
-              } else {
-                themeActions.changeStyle('default');
-              }
-            }}
-          >
-            <IconShirt />
-          </ActionIcon>
-          <ActionIcon
-            variant="default"
-            size="xl"
-            onClick={() => {
-              toggleNavBar();
-              toggleColorScheme();
-              notifications.clean();
-              notifications.show({
-                message: `已${
-                  colorScheme !== 'dark' ? '启用' : '禁用'
-                }深色模式`,
-              });
-            }}
-          >
-            {/* auto: IconSunMoon */}
-            {colorScheme === 'light' ? <IconMoonStars /> : <IconSun />}
-          </ActionIcon>
-          <ActionIcon
-            variant="default"
-            size="xl"
+            variant="light"
+            size="lg"
             onClick={async () => {
               notifications.show({
                 message: '已退出登录',
