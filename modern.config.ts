@@ -42,8 +42,8 @@ export default defineConfig({
     },
     devServer: {
       proxy: {
-        '/api': 'http://localhost:7159',
-        '/captcha-api': 'http://localhost:7169',
+        '/api': 'http://localhost:23159',
+        '/captcha-api': 'http://localhost:23169',
       },
     },
   },
