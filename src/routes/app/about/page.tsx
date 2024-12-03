@@ -63,9 +63,7 @@ export default function AboutPage() {
                 Tabler Icons
               </Anchor>
             </Text>
-            <Text>
-              Copyright © 2019-2024 FastBuilder Dev. Group, CodePwn2021, Bouldev
-            </Text>
+            <Text>Copyright © 2019-2024 FastBuilder Dev. Group, Bouldev</Text>
           </Stack>
         </Stack>
       </MV4Card>
